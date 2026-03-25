@@ -22,9 +22,9 @@
 		ABNORMALITY_WORK_ATTACHMENT = list(70, 60, 50, 50, 50),
 		ABNORMALITY_WORK_REPRESSION = list(50, 40, 30, 30, 30),
 	)
-	work_damage_amount = 2
+	work_damage_upper = 2
+	work_damage_lower = 1
 	work_damage_type = RED_DAMAGE
-	max_boxes = 10
 
 	ego_list = list(
 		/datum/ego_datum/weapon/wingbeat,
@@ -280,15 +280,15 @@
 	icon_state = "fairy_mass"
 	icon_living = "fairy_mass"
 	icon_dead = "fairy_mass_dead"
-	maxHealth = 150
-	health = 150
+	maxHealth = 10
+	health = 10
 	attack_verb_continuous = "bites"
 	attack_verb_simple = "bite"
 	is_flying_animal = TRUE
 	damage_coeff = list(BRUTE = 1, RED_DAMAGE = 1.2, WHITE_DAMAGE = 1.2, BLACK_DAMAGE = 1.2, PALE_DAMAGE = 1.2)
 	faction = list("hostile", "fairy")
 	melee_damage_lower = 1
-	melee_damage_upper = 5
+	melee_damage_upper = 2
 	melee_damage_type = RED_DAMAGE
 	obj_damage = 3
 	rapid_melee = 3

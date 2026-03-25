@@ -14,14 +14,16 @@
 		ABNORMALITY_WORK_ATTACHMENT = 0,
 		ABNORMALITY_WORK_REPRESSION = 0,
 	)
-	work_damage_amount = 3	//Gets more later
+	work_damage_upper = 3
+	work_damage_lower = 2	//Gets more later
 	work_damage_type = WHITE_DAMAGE
 
 	ego_list = list(
-		/datum/ego_datum/weapon/visions,
-		/datum/ego_datum/armor/visions,
+		/datum/ego_datum/weapon/skinprophet,
+		/datum/ego_datum/armor/skinprophet,
 	)
 	gift_type = /datum/ego_gifts/visions
+	can_spawn = FALSE // Normally doesn't appear
 	abnormality_origin = ABNORMALITY_ORIGIN_LIMBUS
 	chem_type = /datum/reagent/abnormality/sin/wrath
 
@@ -54,13 +56,13 @@
 
 /mob/living/simple_animal/hostile/abnormality/skin_prophet/WorkChance(mob/living/carbon/human/user, chance)
 	//work damage starts at 7, + candles stuffed
-	work_damage_amount = initial(work_damage_amount) + candles
+	work_damage_upper = initial(work_damage_upper) + candles
 
 	//If you're doing rep or temeprance then your work chance is your total buffs combined, and damage is increased too
 	if(chance == 0)
 		var/totalbuff = get_level_buff(user, FORTITUDE_ATTRIBUTE) + get_level_buff(user, PRUDENCE_ATTRIBUTE) + get_level_buff(user, TEMPERANCE_ATTRIBUTE) + get_level_buff(user, JUSTICE_ATTRIBUTE)
 		chance = totalbuff
-		work_damage_amount += totalbuff/10
+		work_damage_upper += totalbuff/10
 	return chance
 
 /mob/living/simple_animal/hostile/abnormality/skin_prophet/WorktickFailure(mob/living/carbon/human/user)
@@ -77,7 +79,7 @@
 
 		//Don't try it without any buffs.
 		if(get_level_buff(user, TEMPERANCE_ATTRIBUTE) <=0)
-			user.dust()
+			user.dust(TRUE, TRUE)
 			return
 		user.adjust_attribute_limit(get_level_buff(user, TEMPERANCE_ATTRIBUTE))
 		user.adjust_attribute_buff(TEMPERANCE_ATTRIBUTE, -get_level_buff(user, TEMPERANCE_ATTRIBUTE))
@@ -86,7 +88,7 @@
 		say(pick(speak_list))
 
 		if(get_level_buff(user, JUSTICE_ATTRIBUTE) <=0)
-			user.dust()
+			user.dust(TRUE, TRUE)
 			return
 
 		user.adjust_attribute_limit(get_level_buff(user, JUSTICE_ATTRIBUTE))

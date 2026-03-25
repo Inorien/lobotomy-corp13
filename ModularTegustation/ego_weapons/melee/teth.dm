@@ -12,7 +12,7 @@
 	desc = "The spear often tries to lead the wielder into a long and endless realm of mind, \
 	but they must try to not be swayed by it."
 	icon_state = "fragment"
-	force = 12
+	force = 15
 	reach = 2		//Has 2 Square Reach.
 	stuntime = 5	//Longer reach, gives you a short stun.
 	attack_speed = 1.2
@@ -90,7 +90,7 @@
 		dodgelanding = locate(user.x + 5, user.y, user.z)
 	if(user.dir == 8)
 		dodgelanding = locate(user.x - 5, user.y, user.z)
-	user.adjustStaminaLoss(20, TRUE, TRUE)
+	user.adjustStaminaLoss(8, TRUE, TRUE)
 	user.throw_at(dodgelanding, 3, 2, spin = TRUE)
 
 /obj/item/ego_weapon/regret
@@ -421,11 +421,11 @@
 		++hit_count
 		if(hit_count >= 4)
 			var/mob/living/simple_animal/M = target
-			if(!ishuman(M) && !M.has_status_effect(/datum/status_effect/rend_black))
+			if(!ishuman(M) && !M.has_status_effect(/datum/status_effect/display/rend/black))
 				playsound(src, 'sound/abnormalities/so_that_no_cry/curse_talisman.ogg', 100, 1)
 				to_chat(user, "A talisman from [src] sticks onto [target]!")
 				new /obj/effect/temp_visual/talisman(get_turf(M))
-				M.apply_status_effect(/datum/status_effect/rend_black)
+				M.apply_status_effect(/datum/status_effect/display/rend/black)
 				hit_count = 0
 
 /obj/item/ego_weapon/shield/capote
@@ -448,11 +448,11 @@
 	hit_message = "avoids a direct hit!"
 	block_cooldown_message = "You catch your breath."
 
-/obj/item/ego_weapon/mini/fourleaf_clover
-	name = "four-leaf clover"
+/obj/item/ego_weapon/mini/sticking
+	name = "sticking"
 	desc = "A weapon fit for those that would backstab someone after gaining their trust."
 	special = "This weapon gains 1 poise for every attack. 1 poise gives you a 2% chance to crit at 3x damage, stacking linearly. Critical hits reduce poise to 0."
-	icon_state = "fourleaf_clover"
+	icon_state = "sticking"
 	force = 5
 	attack_speed = 0.5
 	swingstyle = WEAPONSWING_LARGESWEEP
@@ -462,11 +462,11 @@
 	hitsound = 'sound/weapons/fixer/generic/knife2.ogg'
 	var/poise = 0
 
-/obj/item/ego_weapon/mini/fourleaf_clover/examine(mob/user)
+/obj/item/ego_weapon/mini/sticking/examine(mob/user)
 	. = ..()
 	. += "Current Poise: [poise]/20."
 
-/obj/item/ego_weapon/mini/fourleaf_clover/attack(mob/living/target, mob/living/carbon/human/user)
+/obj/item/ego_weapon/mini/sticking/attack(mob/living/target, mob/living/carbon/human/user)
 	if(!CanUseEgo(user))
 		return
 	poise+=1
@@ -557,9 +557,10 @@
 	attack_verb_simple = list("bludgeon", "whack")
 	hitsound = 'sound/weapons/fixer/generic/spear2.ogg'
 
-/obj/item/ego_weapon/lance/visions
-	name = "visions of future past"
-	desc = "A polearm that collapses, and extends while charging."
+/obj/item/ego_weapon/lance/skinprophet
+	name = "9:2"
+	desc = "The people walking in darkness have seen a great light; on those living in the land of deep darkness a light has dawned."
+	special = "A polearm that collapses, and extends while charging."
 	icon_state = "prophet"
 	lefthand_file = 'icons/mob/inhands/96x96_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/96x96_righthand.dmi'
@@ -594,17 +595,17 @@
 	desc = "Unregulated ingestion of Enkephalin may cause a wide range of unverified psychopathological symptoms."
 	icon_state = "denial"
 	force = 15
-	damtype = RED_DAMAGE
+	damtype = WHITE_DAMAGE
 	attack_speed = 1.5
 	attack_verb_continuous = list("smashes", "bludgeons", "crushes")
 	attack_verb_simple = list("smash", "bludgeon", "crush")
-	hitsound = 'sound/weapons/fixer/generic/club3.ogg'
+	hitsound = 'sound/abnormalities/ichthys/slap.ogg'
 
 /obj/item/ego_weapon/rapunzel
 	name = "rapunzel"
 	desc = "Scissors long since lost to time. Packs a punch while being unwieldy."
 	icon_state = "rapunzel"
-	force = 12
+	force = 16
 	stuntime = 5	//Mucho damage, bit of stun in exchange
 	damtype = BLACK_DAMAGE
 	attack_verb_continuous = list("pokes", "jabs", "tears", "lacerates", "gores")
@@ -614,12 +615,25 @@
 /obj/item/ego_weapon/mini/clayman
 	name = "creative freedom"
 	desc = "Clay and flesh are both mediums for expression."
+	special = "This weapon deals either Red, White, Black, or rarely Pale damage on hit."
 	icon_state = "creativefreedom"
-	force = 12
-	stuntime = 5
-	damtype = RED_DAMAGE
+	force = 10
+	attack_speed = 0.7
+	damtype = PALE_DAMAGE
 	hitsound = 'sound/weapons/bladeslice.ogg'
 
+/obj/item/ego_weapon/mini/clayman/attack(mob/living/target, mob/living/user)
+	if(!CanUseEgo(user))
+		return
+	damtype = pick(RED_DAMAGE, WHITE_DAMAGE, BLACK_DAMAGE)
+	if(prob(10))
+		damtype = PALE_DAMAGE
+	..()
+
+/obj/item/ego_weapon/mini/clayman/EgoAttackInfo(mob/user)
+	if(force_multiplier != 1)
+		return span_notice("It deals [round((force) * force_multiplier)] damage. (+ [(force_multiplier - 1) * 100]%)")
+	return span_notice("It deals [force] damage.")
 
 /obj/item/ego_weapon/white_gossypium
 	name = "white gossypium"
@@ -669,7 +683,8 @@
 	special = "This weapon has a combo system. To turn off this combo system, use in hand. \
 			This weapon has a fast attack speed. The combo finisher heals humans in a small area."
 	icon_state = "luminosity"
-	force = 5
+	force = 4
+	modified_attack_speed = 0.4
 	hitsound = 'sound/weapons/fixer/generic/club2.ogg'
 	damtype = RED_DAMAGE
 	attack_verb_continuous = list("smacks", "hammers", "beats")

@@ -29,7 +29,6 @@
 	veryrareloot =	list(
 		/obj/item/trait_injector/agent_workchance_trait_injector,
 		/obj/item/trait_injector/clerk_fear_immunity_injector,
-		/obj/item/trait_injector/officer_upgrade_injector,
 		/obj/item/ego_gift_extractor,
 	)
 
@@ -175,7 +174,7 @@
 	)
 
 	cosmeticloot = list(
-		/mob/living/simple_animal/hostile/shrimp,
+		/mob/living/simple_animal/hostile/aminion/shrimp,
 	)
 
 //W Corporation
@@ -188,7 +187,7 @@
 	cosmeticchance = 25
 	lootlist =	list(
 		/obj/item/ego_weapon/city/wcorp,
-		/obj/item/clothing/suit/armor/ego_gear/wcorp,
+		/obj/item/clothing/suit/armor/ego_gear/city/wcorp,
 	)
 
 	rareloot =	list(

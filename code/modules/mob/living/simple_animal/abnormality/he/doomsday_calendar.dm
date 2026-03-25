@@ -19,14 +19,15 @@
 	threat_level = HE_LEVEL
 	damage_coeff = list(BRUTE = 1, RED_DAMAGE = 0.3, WHITE_DAMAGE = 0.3, BLACK_DAMAGE = 0.1, PALE_DAMAGE = 0.3)//only when initialized
 	start_qliphoth = 5
-	max_boxes = 18//this is the normal amount
+	max_boxes = 18 // This must be defined here for later code to work.
 	work_chances = list(
 		ABNORMALITY_WORK_INSTINCT = 60,
 		ABNORMALITY_WORK_INSIGHT = 45,
 		ABNORMALITY_WORK_ATTACHMENT = 20,
 		ABNORMALITY_WORK_REPRESSION = 50,
 	)
-	work_damage_amount = 5
+	work_damage_upper = 6
+	work_damage_lower = 3
 	work_damage_type = BLACK_DAMAGE
 	chem_type = /datum/reagent/abnormality/sin/wrath
 	can_patrol = FALSE
@@ -100,7 +101,7 @@
 	density = FALSE
 	playsound(src, 'sound/abnormalities/doomsdaycalendar/Doomsday_Dead.ogg', 100, 1)
 	icon = 'ModularTegustation/Teguicons/abno_cores/he.dmi'
-	for(var/mob/living/simple_animal/hostile/doomsday_doll/D in spawned_dolls) //delete the dolls when suppressed
+	for(var/mob/living/simple_animal/hostile/aminion/doomsday_doll/D in spawned_dolls) //delete the dolls when suppressed
 		D.death()
 		QDEL_IN(D, rand(1,5) SECONDS)
 		spawned_dolls -= D
@@ -308,10 +309,10 @@
 	if(M.stat != DEAD)
 		return FALSE
 	if(do_after(user, 20, target = M))
-		if(!ishuman(M) && !istype(M, /mob/living/simple_animal/hostile/doomsday_doll))
+		if(!ishuman(M) && !istype(M, /mob/living/simple_animal/hostile/aminion/doomsday_doll))
 			to_chat(user, span_warning("[src] rejects your offering!"))
 			return
-		if(istype(M ,/mob/living/simple_animal/hostile/doomsday_doll))
+		if(istype(M ,/mob/living/simple_animal/hostile/aminion/doomsday_doll))
 			spawned_dolls -= M
 		to_chat(user, span_nicegreen("[src] is sated by your offering!"))
 		M.gib()
@@ -323,7 +324,7 @@
 
 //***Simple Mobs***//
 //clay dolls
-/mob/living/simple_animal/hostile/doomsday_doll
+/mob/living/simple_animal/hostile/aminion/doomsday_doll
 	name = "doomsday clay doll"
 	desc = "A vaguely humanoid figure bearing a heavy clay helmet."
 	icon = 'ModularTegustation/Teguicons/32x32.dmi'
@@ -345,12 +346,14 @@
 	move_to_delay = 3
 	robust_searching = TRUE
 	stat_attack = HARD_CRIT
+	move_resist = MOVE_RESIST_DEFAULT
 	del_on_death = FALSE
 	density = TRUE
-	var/list/breach_affected = list()
+	threat_level = TETH_LEVEL
+	score_divider = 4//they're cannon fodder anyways
 	var/can_act = TRUE
 
-/mob/living/simple_animal/hostile/doomsday_doll/Initialize()
+/mob/living/simple_animal/hostile/aminion/doomsday_doll/Initialize()
 	. = ..()
 	base_pixel_x = rand(-6,6)
 	pixel_x = base_pixel_x
@@ -362,5 +365,5 @@
 	if (doll_count >= doll_count_maximum)
 		return
 	for(var/i = doll_count, i < doll_count_maximum, i++)//This counts up
-		var /mob/living/simple_animal/hostile/doomsday_doll/D= new(get_turf(src))
+		var /mob/living/simple_animal/hostile/aminion/doomsday_doll/D= new(get_turf(src))
 		spawned_dolls += D

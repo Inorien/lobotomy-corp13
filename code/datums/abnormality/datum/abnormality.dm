@@ -76,6 +76,9 @@
 	//Check for Neutral abnormalities
 	var/good_hater = FALSE
 
+	//Exists to make sure some Abnormalities won't breach again after a trumpet level has been reached and a meltdown hasn't happened
+	var/emergency_breach = TRUE
+
 /datum/abnormality/New(obj/effect/landmark/abnormality_spawn/new_landmark, mob/living/simple_animal/hostile/abnormality/new_type = null)
 	if(!istype(new_landmark))
 		CRASH("Abnormality datum was created without reference to landmark.")
@@ -121,8 +124,11 @@
 	qliphoth_meter_max = current.start_qliphoth
 	qliphoth_meter = qliphoth_meter_max
 	maximum_attribute_level = THREAT_TO_ATTRIBUTE_LIMIT[threat_level]
+	// Zayin - 10, TETH - 14, HE - 18, WAW - 22, ALEPH - 30 as baselines.
 	if(!current.max_boxes)
-		max_boxes = threat_level * 6
+		max_boxes = (threat_level * 4) + 6
+		if(threat_level >= 5)
+			max_boxes += 4
 	else
 		max_boxes = current.max_boxes
 	if(!current.success_boxes)
@@ -222,8 +228,8 @@
 /datum/abnormality/proc/UpdateUnderstanding(percent, pe)
 	// Lower agent pop gets a bonus
 	var/agent_count = max(AvailableAgentCount(), 1)
-	if(agent_count <= 5 && percent)
-		percent *= 1 + (3 / agent_count)
+	if(percent)
+		percent *= 1 + max(0.5, (3 / agent_count))
 
 	if(understanding != max_understanding) // This should render "full_understood" not required.
 		understanding = clamp((understanding + (max_understanding*percent/100)), 0, max_understanding)
@@ -281,20 +287,10 @@
 		acquired_chance = acquired_chance[work_level]
 	if(current)
 		acquired_chance = current.WorkChance(user, acquired_chance, workType)
-	switch(workType)
-		if(ABNORMALITY_WORK_INSTINCT)
-			acquired_chance += user.physiology.instinct_success_mod
-		if(ABNORMALITY_WORK_INSIGHT)
-			acquired_chance += user.physiology.insight_success_mod
-		if(ABNORMALITY_WORK_ATTACHMENT)
-			acquired_chance += user.physiology.attachment_success_mod
-		if(ABNORMALITY_WORK_REPRESSION)
-			acquired_chance += user.physiology.repression_success_mod
-	acquired_chance *= user.physiology.work_success_mod
-
 	//Calculating workchance. This is meant to be somewhat log
 	var/player_temperance = get_modified_attribute_level(user, TEMPERANCE_ATTRIBUTE)
 	acquired_chance += TEMPERANCE_SUCCESS_MOD *((0.07*player_temperance-1.4)/(0.07*player_temperance+4))
+	acquired_chance *= user.physiology.work_success_mod
 	acquired_chance += understanding // Adds up to 6-10% [Threat Based] work chance based off works done on it. This simulates Observation Rating which we lack ENTIRELY and as such has inflated the overall failure rate of abnormalities.
 	switch(console.work_bonus)
 		if(EXTRACTION_KEY)
@@ -309,6 +305,15 @@
 					acquired_chance += 3
 				if(ALEPH_LEVEL)
 					acquired_chance += 3
+	switch(workType)
+		if(ABNORMALITY_WORK_INSTINCT)
+			acquired_chance += user.physiology.instinct_success_mod
+		if(ABNORMALITY_WORK_INSIGHT)
+			acquired_chance += user.physiology.insight_success_mod
+		if(ABNORMALITY_WORK_ATTACHMENT)
+			acquired_chance += user.physiology.attachment_success_mod
+		if(ABNORMALITY_WORK_REPRESSION)
+			acquired_chance += user.physiology.repression_success_mod
 	if(overload_chance[user.ckey])
 		acquired_chance += overload_chance[user.ckey]
 	return clamp(acquired_chance, 0, 100)

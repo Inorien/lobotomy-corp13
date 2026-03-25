@@ -69,19 +69,6 @@
 							JUSTICE_ATTRIBUTE = 80
 							)
 
-/obj/item/clothing/suit/armor/ego_gear/aleph/twilight
-	name = "twilight"
-	desc = "The three birds united their efforts to defeat the beast. \
-	This could stop countless incidents, but you’ll have to be prepared to step into the Black Forest…"
-	icon_state = "twilight"
-	armor = list(RED_DAMAGE = 80, WHITE_DAMAGE = 60, BLACK_DAMAGE = 80, PALE_DAMAGE = 80) // 300
-	attribute_requirements = list(
-							FORTITUDE_ATTRIBUTE = 120,
-							PRUDENCE_ATTRIBUTE = 120,
-							TEMPERANCE_ATTRIBUTE = 120,
-							JUSTICE_ATTRIBUTE = 120
-							)
-
 /obj/item/clothing/suit/armor/ego_gear/aleph/adoration
 	name = "adoration"
 	desc = "It is not as unpleasant to wear as it is to look at. \
@@ -134,18 +121,6 @@
 							JUSTICE_ATTRIBUTE = 120
 							)
 
-/obj/item/clothing/suit/armor/ego_gear/aleph/praetorian
-	name = "praetorian"
-	desc = "The queen's last line of defense."
-	icon_state = "praetorian"
-	armor = list(RED_DAMAGE = 80, WHITE_DAMAGE = 60, BLACK_DAMAGE = 60, PALE_DAMAGE = 40)	//Armor was made before the abnormality.
-	attribute_requirements = list(
-							FORTITUDE_ATTRIBUTE = 100,
-							PRUDENCE_ATTRIBUTE = 80,
-							TEMPERANCE_ATTRIBUTE = 80,
-							JUSTICE_ATTRIBUTE = 80
-							)
-
 /obj/item/clothing/suit/armor/ego_gear/aleph/mockery
 	name = "mockery"
 	desc = "It's smug aura is almost mocking you."
@@ -174,7 +149,7 @@
 	name = "Soulmate"
 	desc = "I’ll follow thee and make a heaven of hell, to die upon the hand I love so well."
 	icon_state = "soulmate"
-	armor = list(RED_DAMAGE = 80, WHITE_DAMAGE = 50, BLACK_DAMAGE = 40, PALE_DAMAGE = 70)
+	armor = list(RED_DAMAGE = 60, WHITE_DAMAGE = 70, BLACK_DAMAGE = 40, PALE_DAMAGE = 70)
 	attribute_requirements = list(
 							FORTITUDE_ATTRIBUTE = 100,
 							PRUDENCE_ATTRIBUTE = 80,

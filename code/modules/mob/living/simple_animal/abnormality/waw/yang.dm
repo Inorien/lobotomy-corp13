@@ -16,12 +16,14 @@
 	pixel_y = -8
 	base_pixel_y = -8
 	stat_attack = HARD_CRIT
+	trigger_lights = FALSE //I'm friendly I swear!(lie)
 
 	//work stuff
 	can_breach = TRUE
 	start_qliphoth = 2
 	threat_level = WAW_LEVEL
-	work_damage_amount = 7
+	work_damage_upper = 6
+	work_damage_lower = 4
 	work_damage_type = WHITE_DAMAGE
 	chem_type = /datum/reagent/abnormality/sin/envy
 	work_chances = list(

@@ -24,7 +24,8 @@
 	melee_damage_upper = 11 //has a wide range, he can critically hit you
 	melee_damage_type = RED_DAMAGE
 	stat_attack = HARD_CRIT
-	work_damage_amount = 7
+	work_damage_upper = 7
+	work_damage_lower = 3
 	work_damage_type = RED_DAMAGE
 	chem_type = /datum/reagent/abnormality/sin/envy
 	attack_verb_continuous = "claws"
@@ -83,7 +84,6 @@
 	attack_action_types = list(
 		/datum/action/cooldown/nosferatu_banquet,
 		/datum/action/cooldown/nosferatu_mistform,
-		/datum/action/innate/change_icon_nosf,
 	)
 
 // Playables buttons
@@ -94,24 +94,6 @@
 	check_flags = AB_CHECK_CONSCIOUS
 	transparent_when_unavailable = TRUE
 	cooldown_time = NOSFERATU_BANQUET_COOLDOWN //12 seconds
-
-/datum/action/innate/change_icon_nosf
-	name = "Toggle Icon"
-	desc = "Toggle your icon between breached and contained. (Works only for Limbus Company Labratories)"
-
-/datum/action/innate/change_icon_nosf/Activate()
-	. = ..()
-	if(SSmaptype.maptype == "limbus_labs")
-		owner.icon = 'ModularTegustation/Teguicons/32x48.dmi'
-		owner.icon_state = "nosferatu"
-		active = 1
-
-/datum/action/innate/change_icon_nosf/Deactivate()
-	. = ..()
-	if(SSmaptype.maptype == "limbus_labs")
-		owner.icon = 'ModularTegustation/Teguicons/32x48.dmi'
-		owner.icon_state = "nosferatu_breach"
-		active = 0
 
 /datum/action/cooldown/nosferatu_banquet/Trigger()
 	if(!..())
@@ -196,7 +178,7 @@
 	var/failure_penalty = (pe - 24)
 	user.adjustBruteLoss(failure_penalty * 3)
 	user.apply_lc_bleed(failure_penalty)
-	new /obj/effect/temp_visual/damage_effect/bleed(get_turf(user))
+	user.OtherDamageEffect(failure_penalty * 3, "bleed")
 	AdjustThirst(failure_penalty * 25) // We're angry so lets suck some blood
 	failed = TRUE
 	to_chat(user, span_warning("[src] suddenly sucks your blood!"))
@@ -209,7 +191,7 @@
 		AdjustThirst(500)
 		user.apply_lc_bleed(5)
 		user.adjustBruteLoss(15)
-		new /obj/effect/temp_visual/damage_effect/bleed(get_turf(user))
+		OtherDamageEffect(15, "bleed")
 		if(!failed)
 			to_chat(user, span_warning("[src] suddenly sucks your blood!"))
 	if(failed || datum_reference.qliphoth_meter < 3) // We sucked blood at least once, lets check the perp
@@ -240,7 +222,7 @@
 /mob/living/simple_animal/hostile/abnormality/nosferatu/BreachEffect(mob/living/carbon/human/user, breach_type)
 	. = ..()
 	var/list/units_to_add = list(
-		/mob/living/simple_animal/hostile/nosferatu_mob = 8
+		/mob/living/simple_animal/hostile/aminion/nosferatu_mob = 8
 		)
 	AddComponent(/datum/component/ai_leadership, units_to_add, 4)
 	mist_cooldown = world.time + mist_cooldown_time
@@ -341,8 +323,6 @@
 		return ..()
 	var/mob/living/carbon/human/H = attacked_target
 	AdjustThirst(200)
-	if(SSmaptype.maptype == "limbus_labs")
-		return ..()
 	if(H.health < 0 || H.stat == DEAD)
 		AdjustThirst(H.blood_volume) // gain up to 2000 blood by draining a corpse
 		H.Drain()
@@ -370,7 +350,7 @@
 		return
 
 	//Actually spawning them
-	var/mob/living/simple_animal/hostile/nosferatu_mob/B = new(get_turf(target_atom))
+	var/mob/living/simple_animal/hostile/aminion/nosferatu_mob/B = new(get_turf(target_atom))
 	spawned_bats+=B
 
 /mob/living/simple_animal/hostile/abnormality/nosferatu/proc/Banquet()//AOE attack
@@ -487,9 +467,9 @@
 
 // This snippet of code makes it so that attacks from its minions give it blood.
 /mob/living/simple_animal/hostile/abnormality/nosferatu/attack_animal(mob/living/simple_animal/M)
-	if(!istype(M, /mob/living/simple_animal/hostile/nosferatu_mob))
+	if(!istype(M, /mob/living/simple_animal/hostile/aminion/nosferatu_mob))
 		return ..()
-	var/mob/living/simple_animal/hostile/nosferatu_mob/blood_transfer_target = M
+	var/mob/living/simple_animal/hostile/aminion/nosferatu_mob/blood_transfer_target = M
 	var/datum/component/bloodfeast/target_bloodfeast = blood_transfer_target.GetComponent(/datum/component/bloodfeast)
 	if(target_bloodfeast.blood_amount >= 100)
 		var/amount_to_transfer = clamp(target_bloodfeast.blood_amount, 100, 1000)
@@ -501,7 +481,7 @@
 		blood_transfer_target.LoseTarget()
 
 // Bat minion - A non-dense trash mob that automatically harvests blood on attacks and returns blood to nosferatu. Dangeorus.
-/mob/living/simple_animal/hostile/nosferatu_mob
+/mob/living/simple_animal/hostile/aminion/nosferatu_mob
 	name = "\improper Sanguine bat"
 	desc = "It looks like a bat."
 	icon = 'ModularTegustation/Teguicons/32x32.dmi'
@@ -527,16 +507,18 @@
 	ranged = TRUE
 	retreat_distance = 3
 	minimum_distance = 1
+	threat_level = HE_LEVEL
+	score_divider = 8
 
-/mob/living/simple_animal/hostile/nosferatu_mob/Initialize(mapload)
+/mob/living/simple_animal/hostile/aminion/nosferatu_mob/Initialize(mapload)
 	. = ..()
 	AddComponent(/datum/component/bloodfeast, range = 1)
 
-/mob/living/simple_animal/hostile/nosferatu_mob/proc/AdjustThirst(blood_amount)
+/mob/living/simple_animal/hostile/aminion/nosferatu_mob/proc/AdjustThirst(blood_amount)
 	var/datum/component/bloodfeast/bloodfeast = GetComponent(/datum/component/bloodfeast)
 	bloodfeast.AdjustBlood(blood_amount)
 
-/mob/living/simple_animal/hostile/nosferatu_mob/AttackingTarget(atom/attacked_target) // They gain blood on hit
+/mob/living/simple_animal/hostile/aminion/nosferatu_mob/AttackingTarget(atom/attacked_target) // They gain blood on hit
 	. = ..()
 	if(!ishuman(attacked_target))
 		return
@@ -547,13 +529,13 @@
 		return
 	AdjustThirst(100)
 
-/mob/living/simple_animal/hostile/nosferatu_mob/OpenFire(atom/A)
+/mob/living/simple_animal/hostile/aminion/nosferatu_mob/OpenFire(atom/A)
 	if(istype(A, /mob/living/simple_animal/hostile/abnormality/nosferatu))
 		return
 	visible_message(span_danger("<b>[src]</b> flies around, seemingly aiming for [A]!"))
 	ranged_cooldown = world.time + ranged_cooldown_time
 
-/mob/living/simple_animal/hostile/nosferatu_mob/PickTarget(list/Targets)
+/mob/living/simple_animal/hostile/aminion/nosferatu_mob/PickTarget(list/Targets)
 	var/list/priority = list()
 	for(var/mob/living/L in Targets)
 		if(istype(L, /mob/living/simple_animal/hostile/abnormality/nosferatu))
@@ -567,12 +549,12 @@
 	if(LAZYLEN(priority))
 		return pick(priority)
 
-/mob/living/simple_animal/hostile/nosferatu_mob/CanAttack(atom/the_target)
+/mob/living/simple_animal/hostile/aminion/nosferatu_mob/CanAttack(atom/the_target)
 	if(istype(the_target, /mob/living/simple_animal/hostile/abnormality/nosferatu))
 		return TRUE
 	return ..()
 
-/mob/living/simple_animal/hostile/nosferatu_mob/death(gibbed)
+/mob/living/simple_animal/hostile/aminion/nosferatu_mob/death(gibbed)
 	var/datum/component/bloodfeast/bloodfeast = GetComponent(/datum/component/bloodfeast)
 	var/obj/effect/decal/cleanable/blood/B = new(get_turf(src))
 	B.bloodiness = (bloodfeast.blood_amount * 0.5) // drops half of its blood on death. This is potentially far more than what fits in a splatter.

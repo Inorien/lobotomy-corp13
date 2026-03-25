@@ -30,7 +30,8 @@
 	)
 	pixel_x = -34
 	base_pixel_x = -34
-	work_damage_amount = 3
+	work_damage_upper = 4
+	work_damage_lower = 2
 	work_damage_type = RED_DAMAGE
 	chem_type = /datum/reagent/abnormality/sin/sloth
 
@@ -88,7 +89,6 @@
 //Action Buttons
 	attack_action_types = list(
 	/datum/action/innate/abnormality_attack/toggle/FairyJump,
-	/datum/action/cooldown/gentleman_drink,
 	)
 
 /datum/action/innate/abnormality_attack/toggle/FairyJump
@@ -100,23 +100,6 @@
 	toggle_attack_num = 1
 	toggle_message = span_colossus("You will now jump with your next attack when possible.")
 	button_icon_toggle_deactivated = "generic_toggle0"
-
-/datum/action/cooldown/gentleman_drink
-	name = "Offer a drink"
-	icon_icon = 'icons/obj/drinks.dmi'
-	button_icon_state = "fairy_wine"
-	check_flags = AB_CHECK_CONSCIOUS
-	transparent_when_unavailable = TRUE
-	cooldown_time = 5 SECONDS
-
-/datum/action/cooldown/gentleman_drink/Trigger()
-	if(!..())
-		return FALSE
-	if(!istype(owner, /mob/living/simple_animal/hostile/abnormality/fairy_gentleman))
-		return FALSE
-	if(SSmaptype.maptype == "limbus_labs")
-		new /obj/item/reagent_containers/food/drinks/fairywine(owner.loc)
-		owner.visible_message(span_notice("[owner] produces a round of drinks"))
 
 //Work mechanics
 /mob/living/simple_animal/hostile/abnormality/fairy_gentleman/SuccessEffect(mob/living/carbon/human/user, work_type, pe)

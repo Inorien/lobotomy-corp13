@@ -17,7 +17,8 @@
 	start_qliphoth = 3
 	pixel_x = -16
 	base_pixel_x = -16
-	work_damage_amount = 3
+	work_damage_upper = 4
+	work_damage_lower = 2
 	work_damage_type = WHITE_DAMAGE
 	chem_type = /datum/reagent/abnormality/sin/envy
 
@@ -28,6 +29,7 @@
 	gift_type = /datum/ego_gifts/lutemis
 	gift_message = "Let's all become fruits. Let's hang together. Your despair, sadness... Let's all dangle down."
 	abnormality_origin = ABNORMALITY_ORIGIN_WONDERLAB
+	can_spawn = FALSE
 
 	observation_prompt = "You pass by the containment cell and, in the corner of your eye, spy your comrades dangling from ribbons, furiously scratching at their necks in choked agony."
 	observation_choices = list(

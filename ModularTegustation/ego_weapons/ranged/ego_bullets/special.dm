@@ -37,7 +37,7 @@
 	damage_type = PALE_DAMAGE
 
 /obj/projectile/ego_bullet/ego_kcorp
-	damage = 15
+	damage = 5
 
 /obj/projectile/ego_bullet/ego_knade
 	damage = 15
@@ -75,3 +75,29 @@
 /obj/projectile/ego_bullet/fivedamage
 	name = "bullet"
 	damage = 5
+
+//feather of honor
+/obj/projectile/ego_bullet/ego_feather
+	name = "feather"
+	icon_state = "lava"
+	damage = 15
+	damage_type = WHITE_DAMAGE
+	homing = TRUE
+	speed = 0.75
+	alpha = 0
+	spread = 5
+
+/obj/projectile/ego_bullet/ego_feather/Initialize()
+	. = ..()
+	hitsound = "sound/abnormalities/seasons/summer_attack.ogg"
+	hitsound_wall = hitsound
+	animate(src, alpha = 255, time = 2)
+
+/obj/projectile/ego_bullet/ego_feather/fire()
+	playsound(loc, "sound/abnormalities/seasons/summer_change.ogg", 5, TRUE, -1)
+	. = ..()
+
+/obj/projectile/ego_bullet/ego_feather/Impact()
+	if(!fired)
+		return FALSE
+	return ..()

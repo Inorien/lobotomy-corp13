@@ -17,9 +17,11 @@
 	pixel_x = -8
 	base_pixel_x = -8
 
-	work_damage_amount = 3
+	work_damage_upper = 3
+	work_damage_lower = 2
 	work_damage_type = RED_DAMAGE
 	chem_type = /datum/reagent/abnormality/sin/lust	//Limbus Company Red Eyes EGO
+
 	damage_coeff = list(RED_DAMAGE = 1.2, WHITE_DAMAGE = 2, BLACK_DAMAGE = 0.8, PALE_DAMAGE = 2)
 	good_hater = TRUE
 	ego_list = list(
@@ -101,7 +103,7 @@
 	summon_cooldown = world.time + summon_cooldown_time
 	for(var/i = 1 to summon_group_size)
 		var/turf/target_turf = get_turf(src)
-		new /mob/living/simple_animal/hostile/bud_spider(target_turf)
+		new /mob/living/simple_animal/hostile/aminion/bud_spider(target_turf)
 		summon_count += 1
 
 /obj/structure/spider/cocoon/spider_bud
@@ -137,7 +139,7 @@
 
 	return ..()
 
-/mob/living/simple_animal/hostile/bud_spider
+/mob/living/simple_animal/hostile/aminion/bud_spider
 	name = "Spiderling"
 	desc = "The offspring of spider bud."
 	icon = 'ModularTegustation/Teguicons/64x64.dmi'
@@ -159,3 +161,4 @@
 	move_to_delay = 2
 	del_on_death = TRUE
 	stat_attack = DEAD
+	fear_level = TETH_LEVEL //Spooky

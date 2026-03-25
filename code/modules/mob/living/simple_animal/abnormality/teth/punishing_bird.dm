@@ -43,8 +43,10 @@
 		ABNORMALITY_WORK_ATTACHMENT = list(55, 55, 50, 50, 50),
 		ABNORMALITY_WORK_REPRESSION = list(30, 20, 10, 0, 0),
 	)
-	work_damage_amount = 3
+	work_damage_upper = 4
+	work_damage_lower = 2
 	work_damage_type = RED_DAMAGE
+	max_boxes = 12
 
 	ego_list = list(
 		/datum/ego_datum/weapon/beak,
@@ -58,6 +60,8 @@
 		/mob/living/simple_animal/hostile/abnormality/big_bird = 3,
 		/mob/living/simple_animal/hostile/abnormality/judgement_bird = 3,
 	)
+
+	can_affect_min = FALSE
 
 	observation_prompt = "A bird stares at you. What is the name of this bird?"
 	observation_choices = list(
@@ -77,6 +81,7 @@
 	var/angry_damage_human = 1200
 
 	var/death_timer
+	var/omw_to_apoc = FALSE
 
 /mob/living/simple_animal/hostile/abnormality/punishing_bird/Initialize()
 	. = ..()
@@ -224,7 +229,7 @@
 			return A
 
 /mob/living/simple_animal/hostile/abnormality/punishing_bird/ListTargets()
-	if(!enemies.len && !pecking_targets.len)
+	if(omw_to_apoc || (!enemies.len && !pecking_targets.len))
 		return list()
 	var/list/see = ..()
 	var/list/targeting = list()
@@ -233,6 +238,11 @@
 		targeting |= pecking_targets
 	see &= targeting // Remove all entries that aren't in enemies
 	return see
+
+/mob/living/simple_animal/hostile/abnormality/punishing_bird/FindTarget(list/possible_targets, HasTargetsList)
+	if(omw_to_apoc) // Nah I'd Walk
+		return
+	. = ..()
 
 /mob/living/simple_animal/hostile/abnormality/punishing_bird/HandleStructures()
 	. = ..()
@@ -291,6 +301,8 @@
 
 /mob/living/simple_animal/hostile/abnormality/punishing_bird/BreachEffect(mob/living/carbon/human/user, breach_type)
 	. = ..()
+	omw_to_apoc = FALSE
+	docile_confinement = FALSE
 	icon_state = initial(icon_state)
 	icon_living = initial(icon_living)
 	pixel_x = initial(pixel_x)

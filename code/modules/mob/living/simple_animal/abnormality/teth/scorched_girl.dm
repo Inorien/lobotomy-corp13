@@ -20,9 +20,11 @@
 		ABNORMALITY_WORK_ATTACHMENT = list(30, 15, 0, -40, -50),
 		ABNORMALITY_WORK_REPRESSION = list(50, 50, 40, 40, 40),
 	)
-	work_damage_amount = 3
+	work_damage_upper = 4
+	work_damage_lower = 2
 	work_damage_type = RED_DAMAGE
 	chem_type = /datum/reagent/abnormality/sin/envy
+	max_boxes = 12
 	damage_coeff = list(RED_DAMAGE = 0.5, WHITE_DAMAGE = 2, BLACK_DAMAGE = 1, PALE_DAMAGE = 2)
 	faction = list("hostile")
 	can_breach = TRUE
@@ -55,22 +57,6 @@
 	/// Amount of RED damage done on explosion
 	var/boom_damage = 300
 	patrol_cooldown_time = 10 SECONDS //Scorched be zooming
-
-	attack_action_types = list(
-		/datum/action/innate/change_icon_scorch,
-	)
-
-
-/datum/action/innate/change_icon_scorch
-	name = "Toggle Icon"
-	desc = "Toggle your icon between breached and contained. (Works only for Limbus Company Labratories)"
-
-/datum/action/innate/change_icon_scorch/Activate()
-	. = ..()
-	if(SSmaptype.maptype == "limbus_labs")
-		owner.icon = 'ModularTegustation/Teguicons/tegumobs.dmi'
-		owner.icon_state = "scorched"
-		active = 1
 
 /datum/action/innate/change_icon_scorch/Deactivate()
 	. = ..()
@@ -150,17 +136,11 @@
 		H.deal_damage(boom_damage * 0.5, FIRE)
 		if(H.health < 0)
 			H.gib()
-	if(SSmaptype.maptype == "limbus_labs")
-		for(var/obj/structure/obstacle in view(2, src))
-			obstacle.take_damage(boom_damage, RED_DAMAGE)
 	new /obj/effect/temp_visual/explosion(get_turf(src))
 	var/datum/effect_system/smoke_spread/S = new
 	S.set_up(7, get_turf(src))
 	S.start()
-	if(SSmaptype.maptype != "limbus_labs")
-		qdel(src)
-	else
-		exploding = FALSE
+	qdel(src)
 	return
 
 /mob/living/simple_animal/hostile/abnormality/scorched_girl/NeutralEffect(mob/living/carbon/human/user, work_type, pe)

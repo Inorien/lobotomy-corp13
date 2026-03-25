@@ -62,11 +62,15 @@ GLOBAL_VAR(lobotomy_repairs)
 				to_chat(user, span_notice("You start to reconnect the display..."))
 				if(P.use_tool(src, user, 20, volume=50))
 					to_chat(user, span_notice("The panel vanishes. This containment cell will automatically complete when an abnormality is extracted into it."))
-					var/turf/T = get_turf(src)
-					T = get_ranged_target_turf(T, WEST, 4)
-					new /obj/effect/spawner/abnormality_room(T)
-					GLOB.lobotomy_repairs += 1
-					qdel(src)
+					CreateCell()
+
+/obj/machinery/containment_hotspot/proc/CreateCell()
+	var/turf/T = get_turf(src)
+	T = get_ranged_target_turf(T, WEST, 4)
+	new /obj/effect/spawner/abnormality_room(T)
+	GLOB.lobotomy_repairs += 1
+	SSlobotomy_corp.CheckRepairState()
+	qdel(src)
 
 /obj/broken_regenerator
 	name = "broken regenerator"
@@ -92,6 +96,7 @@ GLOBAL_VAR(lobotomy_repairs)
 		qdel(O)
 		new /obj/machinery/regenerator(get_turf(src))
 		GLOB.lobotomy_repairs += 1
+		SSlobotomy_corp.CheckRepairState()
 		qdel(src)
 
 /obj/structure/itemselling/ucorp
@@ -103,33 +108,44 @@ GLOBAL_VAR(lobotomy_repairs)
 	level_0 = list(
 		/obj/item/food/meat/slab/pallid,
 	)
-	level_1 = list()//add mermaid/whale meat to this
-	level_2 = list()
+	level_1 = list(
+		/obj/item/food/meat/slab/mermaid,
+	)
+	level_2 = list(
+		/obj/item/food/meat/slab/whale,
+	)
 	level_3 = list(
 		/obj/item/food/fish/salt_water/tuna_pallid,
-		)
+	)
 	exclude_listing = list()
 
 	prices = list(
 		10,
 		50,
-		0,
+		200,
 		1000,
+		)
+
+	var/price_path = list(
+		/obj/item/stack/spacecash/c10,
+		/obj/item/stack/spacecash/c50,
+		/obj/item/stack/spacecash/c200,
+		/obj/item/stack/spacecash/c1000,
 		)
 
 /obj/structure/itemselling/ucorp/ManageSales(obj/item/I, mob/living/user)
 	var/spawntype
-	if(is_type_in_typecache(I, level_3))
-		spawntype = /obj/item/stack/spacecash/c1000
-	else if(is_type_in_typecache(I, level_1))
-		spawntype = /obj/item/stack/spacecash/c50
-	else if (is_type_in_typecache(I, level_0))
-		spawntype = /obj/item/stack/spacecash/c10
-	else
+	var/loot_lists = list(level_0, level_1, level_2, level_3)
+
+	for (var/i = 1, i <= LAZYLEN(loot_lists), i++)
+		if(is_type_in_typecache(I, loot_lists[i]))
+			spawntype = price_path[i]
+			break
+
+	if(!spawntype)
 		to_chat(user, span_warning("You cannot sell [I]."))
 		return FALSE
 
-	if(spawntype)
-		new spawntype (get_turf(src))
-		qdel(I)
+	new spawntype (get_turf(src))
+	qdel(I)
 	return TRUE

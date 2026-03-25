@@ -20,12 +20,21 @@
 	blood_volume = BLOOD_VOLUME_NORMAL // THERE WILL BE BLOOD. SHED.
 	simple_mob_flags = SILENCE_RANGED_MESSAGE
 	can_patrol = TRUE
+	trigger_lights = TRUE
+	//Does this enemy count for the emergency system
+	var/can_affect_emergency = TRUE
+	//The divider for score for the emergency system. We don't want minion spam to count too much
+	var/score_divider = 1
+	//Incase you want an enemy to add a constant amount of points
+	var/set_score = null
+	//Does this enemy count for the min emergency level?
+	var/can_affect_min = TRUE
 	/// Can this abnormality spawn normally during the round?
 	var/can_spawn = TRUE
 	/// Reference to the datum we use
 	var/datum/abnormality/datum_reference = null
 	/// The threat level of the abnormality. It is passed to the datum on spawn
-	var/threat_level = ZAYIN_LEVEL
+	threat_level = ZAYIN_LEVEL
 	/// Separate level of fear. If null - will use threat level.
 	var/fear_level = null
 	/// Maximum qliphoth level, passed to datum
@@ -49,10 +58,11 @@
 	)
 	/// Work Types and corresponding their attributes
 	var/list/work_attribute_types = WORK_TO_ATTRIBUTE
-	/// How much damage is dealt to user on each work failure
-	var/work_damage_amount = 2
+	/// Range of how much damage is dealt to user on each work failure
+	var/work_damage_upper = 2
+	var/work_damage_lower = 1
 	/// What damage type is used for work failures
-	/// Can be a list, work_damage_amount in that case is divided by the objects in the list and visuals are chosen randomly
+	/// Can be a list, work damage in that case is divided by the objects in the list and visuals are chosen randomly
 	var/work_damage_type = RED_DAMAGE
 	/// Maximum amount of PE someone can obtain per work procedure, if not null or 0.
 	var/max_boxes = null
@@ -179,11 +189,6 @@
 	if(secret_chance && prob(1))
 		InitializeSecretIcon()
 
-	//Abnormalities have no name here. And we don't want nonsentient ones to breach
-	if(SSmaptype.maptype == "limbus_labs")
-		name = "Limbus Company Specimen"
-		faction = list("neutral")
-
 /mob/living/simple_animal/hostile/abnormality/proc/InitializeSecretIcon()
 	SHOULD_CALL_PARENT(TRUE) // if you ever need to override this proc, consider adding onto it instead or not using all the variables given
 	secret_abnormality = TRUE
@@ -214,10 +219,7 @@
 	else if(core_enabled)//Abnormality Cores are spawned if there is no console tied to the abnormality
 		CreateAbnoCore(name, core_icon)//If cores are manually disabled for any reason, they won't generate.
 	. = ..()
-	if(loc)
-		if(isarea(loc))
-			var/area/a = loc
-			a.RefreshLights()
+	SSlobotomy_emergency.UpdateMin()//A fail safe incase they get deleted
 
 /mob/living/simple_animal/hostile/abnormality/add_to_mob_list()
 	. = ..()
@@ -461,7 +463,7 @@ The variable's key needs to be non-numerical.*/
 
 // Additional effect on each individual work tick failure
 /mob/living/simple_animal/hostile/abnormality/proc/WorktickFailure(mob/living/carbon/human/user)
-	user.deal_damage(work_damage_amount, work_damage_type)
+	user.deal_damage(rand(work_damage_lower,work_damage_upper), work_damage_type)
 	WorkDamageEffect()
 	return
 
@@ -606,6 +608,12 @@ The variable's key needs to be non-numerical.*/
 			C.icon = 'ModularTegustation/Teguicons/abno_cores/waw.dmi'
 		if(5)
 			C.icon = 'ModularTegustation/Teguicons/abno_cores/aleph.dmi'
+
+/mob/living/simple_animal/hostile/abnormality/proc/HostileMode(should_trigger)//this is used by a few abnormalities to turn on a breaching mode
+	QuickChangeLights(TRUE)
+	can_affect_emergency = TRUE
+	if(should_trigger)
+		SSlobotomy_emergency.OnAbnoBreach(null, src)
 
 /mob/living/simple_animal/hostile/abnormality/spawn_gibs()
 	if(blood_volume <= 0)

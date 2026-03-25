@@ -30,7 +30,8 @@
 		ABNORMALITY_WORK_ATTACHMENT = 0,
 		ABNORMALITY_WORK_REPRESSION = 50,
 	)
-	work_damage_amount = 8
+	work_damage_upper = 7
+	work_damage_lower = 4
 	work_damage_type = BLACK_DAMAGE
 	chem_type = /datum/reagent/abnormality/sin/gluttony
 
@@ -96,7 +97,7 @@
 			SLEEP_CHECK_DEATH(5)
 
 			//Takes your skin and leaves your bone. You are now a flesh servant under her skirt in GBJ
-			H.dust()
+			H.dust(TRUE, TRUE)
 
 			// it gets faster.
 
@@ -153,5 +154,5 @@
 
 /mob/living/simple_animal/hostile/abnormality/warden/bullet_act(obj/projectile/P)
 	visible_message(span_userdanger("[src] is unfazed by \the [P]!"))
-	new /obj/effect/temp_visual/healing/no_dam(get_turf(src))
+	HealingEffect("no_dam")
 	P.Destroy()

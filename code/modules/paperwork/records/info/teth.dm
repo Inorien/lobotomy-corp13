@@ -389,11 +389,11 @@
 //Dealer of the Damned
 /obj/item/paper/fluff/info/teth/dealerdamned
 	abno_type = /mob/living/simple_animal/hostile/abnormality/dealerdamned
-	abno_code = "T-01-72"
+	abno_code = "T-01-272"
 	abno_info = list(
-		"When Agent Jamie poked T-01-72, the abnormality took some of Agent Jamie's health as a wager for a coin flip. When the coin landed heads, Jamie's health was refunded and the next work had a higher success rate. When the coin landed tails, nothing happened.",
-		"When Agent Jamie tried to coinflip a second time prior to working, T-01-72 refused.",
-		"When Gambling work was performed, T-01-72 and the agent engaged in a game of Russian Roulette.",
+		"When Agent Jamie poked T-01-272, the abnormality took some of Agent Jamie's health as a wager for a coin flip. When the coin landed heads, Jamie's health was refunded and the next work had a higher success rate. When the coin landed tails, nothing happened.",
+		"When Agent Jamie tried to coinflip a second time prior to working, T-01-272 refused.",
+		"When Gambling work was performed, T-01-272 and the agent engaged in a game of Russian Roulette.",
 		"If the agent survived the game of Russian Roulette, they were awarded with an unique E.G.O. Weapon.")
 
 //Forsaken Employee
@@ -402,9 +402,8 @@
 	abno_code = "T-01-201" //We can change the number once we figure out the proper code
 	abno_info = list(
 		"When the work result was Bad, the Qliphoth Counter lowered.",
-		"When the Qliphoth Counter reached 0, the abnormality let out a yell that seems to damage the electricity of the nearest connected circuit.",
-		"Considering how the containment cells are designed, the nearest circuits seem to be the ciruitry for the facility's lighting.",
-		"The energy lost from an electric surge from this abnormality will be taken out of the quota.")
+		"When Foresaken Employee escaped, it spilled chemicals that inflict WHITE damage to employees that crossed it.",
+		)
 
 //Tangle
 /obj/item/paper/fluff/info/teth/tangle
@@ -419,20 +418,24 @@
 	abno_type = /mob/living/simple_animal/hostile/abnormality/clayman
 	abno_code = "O-04-204"
 	abno_info = list(
-		"Employees who worked on O-04-204 reported no meaningful difference between work types.",
+		"No meaningful difference between work types could be noticed on the first work.",
 		"During work and breaches, the damage type dealt seemed to vary from hit to hit.",
-		"When the work result was Bad, the Qliphoth Counter lowered."
+		"However, each work increased the chances of a successful work on the revelant work by an estimated 10%, with other work being reduced by 5%",
+		"However, should any work type's base success rate reach 100%, O-04-204 would proceed to fall apart, putting all work rates at an equal but very low percentage.",
+		"When the work result was Bad and O-04-204 wasn't falling apart, the Qliphoth Counter lowered."
 	)
+	abno_work_damage_type = "Random"
 
 //Sirocco
 /obj/item/paper/fluff/info/teth/sirocco
 	abno_type = /mob/living/simple_animal/hostile/abnormality/sirocco
 	abno_code = "C-01-205"
 	abno_info = list(
+		"When the work result was Good, the Qliphoth Counter raised.",
+		"When the work result was Bad, the Qliphoth Counter lowered.",
+		"When the emergency situation in the facility went up, the Qliphoth Counter was lowered by the difference.",
 		"Once the Qliphoth Counter reaches 0, Sirocco leaves her containment cell to play.",
-		"Every two minutes, the Qliphoth Counter lowered by one.",
-		"When the work result was Normal, the Qliphoth Counter raised.",
-		"When the work result was Good, Sirocco was quicker to return to her cell in a later breach."
+		"Once the emergency situation in the facility returned to normal, Sirocco faded away after some time.",
 	)
 
 //Hurting Teddy Bear

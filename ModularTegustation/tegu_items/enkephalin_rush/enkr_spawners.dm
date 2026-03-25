@@ -27,12 +27,12 @@
 	var/spawning = pick(possible_items)
 	new spawning(get_turf(src))
 
+GLOBAL_DATUM_INIT(map_enemy, /datum/enemy, new)
 
 //map-based enemy faction selection
 /obj/effect/spawner/map_enemy
 	var/level = 1//risk level
 	var/obj/effect/spawner/mobspawner/chosen_spawner//the spawner this copies vars from
-	var/global/map_enemy//enemy type determined when initialized the first time in a given round
 	var/list/ordeal_types = list()//the types of ordeals the enemy type can spawn
 	var/list/spawner_types = list(//TODO: this needs to be determined by specific maps. Default is currently for District 4
 			/datum/enemy/gold,
@@ -48,15 +48,14 @@
 	..()
 
 /obj/effect/spawner/map_enemy/Initialize()
-	if(!map_enemy)
-		switch(SSmaptype.map_tags)
-			if("whales")
-				spawner_types = list(/datum/enemy/brown)
-				//spawner_types += /datum/enemy/whales
-			if("wineberrycreek")
-				spawner_types += /datum/enemy/gold//Make wineberry abnos their own enemy type later. This currently doubles their odds of appearing.
-		map_enemy = pick(spawner_types)
-	var/datum/enemy/myenemy = new map_enemy()
+	if(istype(GLOB.map_enemy, /datum/enemy))
+		if("whales" in SSmaptype.map_tags)//50% chance to roll whales, 50% anything else
+			spawner_types += list(/datum/enemy/whales, /datum/enemy/whales, /datum/enemy/whales, /datum/enemy/whales)
+		if("wineberrycreek" in SSmaptype.map_tags)
+			spawner_types += /datum/enemy/gold//Make wineberry abnos their own enemy type later. This currently doubles their odds of appearing.
+		var/datum/enemy/selection = pick(spawner_types)
+		GLOB.map_enemy = new selection()
+	var/datum/enemy/myenemy = GLOB.map_enemy
 	if(istype(myenemy,/datum/enemy))
 		ordeal_types = myenemy.ordeal_types
 	var/i = 0
@@ -70,6 +69,7 @@
 
 /datum/enemy
 	var/ordeal_types = list()
+	var/spawn_data = list()
 
 //amber ordeals
 /datum/enemy/amber
@@ -125,6 +125,16 @@
 		/obj/effect/spawner/mobspawner/waw,
 		/obj/effect/spawner/mobspawner/aleph,
 		)
+
+/datum/enemy/whales
+	ordeal_types = list(
+	/obj/effect/spawner/mobspawner/whale_dawn,
+	/obj/effect/spawner/mobspawner/whale_noon,
+	/obj/effect/spawner/mobspawner/whale_dusk,
+	/obj/effect/spawner/mobspawner/whale_dusk/duo,
+	)
+
+//***********Spawners go here***********
 
 	//Peccatulae
 /obj/effect/spawner/mobspawner/brown_dawn
@@ -218,45 +228,45 @@
 	name = "teth abnormality thrall spawn"
 	max_spawns = 1
 	mobspawn_table = list(
-		/mob/living/simple_animal/hostile/doomsday_doll = 10,
-		/mob/living/simple_animal/hostile/azure_stave = 1,//servant of wrath minion
+		/mob/living/simple_animal/hostile/aminion/doomsday_doll = 10,
+		/mob/living/simple_animal/hostile/aminion/azure_stave = 1,//servant of wrath minion
 		)
 
 /obj/effect/spawner/mobspawner/he
 	name = "he abnormality thrall spawn"
 	max_spawns = 1
 	mobspawn_table = list(
-		/mob/living/simple_animal/hostile/shrimp = 10,//shrimp liquidation intern
-		/mob/living/simple_animal/hostile/shrimp_soldier = 1,//shotgun shrimp
-		/mob/living/simple_animal/hostile/gift = 1,//laetitia spider
-		/mob/living/simple_animal/hostile/grown_strong = 1,
-		/mob/living/simple_animal/hostile/nosferatu_mob = 10,
-		/mob/living/simple_animal/hostile/worker_bee = 10,
-		/mob/living/simple_animal/hostile/soldier_bee = 10,//identical to above, has a hat
-		/mob/living/simple_animal/hostile/artillery_bee = 5,
-		/mob/living/simple_animal/hostile/slime = 1,//ML slime (small)
+		/mob/living/simple_animal/hostile/aminion/shrimp = 10,//shrimp liquidation intern
+		/mob/living/simple_animal/hostile/aminion/shrimp_soldier = 1,//shotgun shrimp
+		/mob/living/simple_animal/hostile/aminion/gift = 1,//laetitia spider
+		/mob/living/simple_animal/hostile/aminion/grown_strong = 1,
+		/mob/living/simple_animal/hostile/aminion/nosferatu_mob = 10,
+		/mob/living/simple_animal/hostile/aminion/worker_bee = 10,
+		/mob/living/simple_animal/hostile/aminion/soldier_bee = 10,//identical to above, has a hat
+		/mob/living/simple_animal/hostile/aminion/artillery_bee = 5,
+		/mob/living/simple_animal/hostile/aminion/slime = 1,//ML slime (small)
 		)
 
 /obj/effect/spawner/mobspawner/waw
 	name = "waw abnormality thrall spawn"
 	max_spawns = 1
 	mobspawn_table = list(
-		/mob/living/simple_animal/hostile/yagaslave = 5,
-		/mob/living/simple_animal/hostile/parasite_tree_sapling = 1,
-		/mob/living/simple_animal/hostile/thunder_zombie = 5,
+		/mob/living/simple_animal/hostile/aminion/yagaslave = 5,
+		/mob/living/simple_animal/hostile/aminion/parasite_tree_sapling = 1,
+		/mob/living/simple_animal/hostile/aminion/thunder_zombie = 5,
 		)
 
 /obj/effect/spawner/mobspawner/aleph
 	name = "aleph abnormality thrall spawn"
 	max_spawns = 1
 	mobspawn_table = list(
-		/mob/living/simple_animal/hostile/little_prince_1 = 1,//this guy has a wopping 1200 hp
-		/mob/living/simple_animal/hostile/mini_censored = 1,
-		/mob/living/simple_animal/hostile/meatblob = 10,
-		/mob/living/simple_animal/hostile/meatblob/gunner = 5,
-		/mob/living/simple_animal/hostile/meatblob/gunner/shotgun = 5,
-		/mob/living/simple_animal/hostile/meatblob/gunner/sniper = 5,
-		/mob/living/simple_animal/hostile/slime/big = 2,//ML's chosen
+		/mob/living/simple_animal/hostile/aminion/little_prince_1 = 1,//this guy has a wopping 1200 hp
+		/mob/living/simple_animal/hostile/aminion/mini_censored = 1,
+		/mob/living/simple_animal/hostile/aminion/meatblob = 10,
+		/mob/living/simple_animal/hostile/aminion/meatblob/gunner = 5,
+		/mob/living/simple_animal/hostile/aminion/meatblob/gunner/shotgun = 5,
+		/mob/living/simple_animal/hostile/aminion/meatblob/gunner/sniper = 5,
+		/mob/living/simple_animal/hostile/aminion/slime/big = 2,//ML's chosen
 		)
 
 //Steel Singles
@@ -327,3 +337,26 @@
 	/mob/living/simple_animal/hostile/ordeal/indigo_dusk/black = 2,
 	/mob/living/simple_animal/hostile/ordeal/indigo_dusk/pale = 1,
 	)
+
+/obj/effect/spawner/mobspawner/whale_dawn
+	max_spawns = 1
+	mobspawn_table = list(
+	/mob/living/simple_animal/hostile/ordeal/mermaid_porous = 100,
+	/mob/living/simple_animal/hostile/ordeal/mermaid_porous/soldier = 1,
+	)
+
+/obj/effect/spawner/mobspawner/whale_noon
+	max_spawns = 1
+	mobspawn_table = list(
+	/mob/living/simple_animal/hostile/ordeal/mermaid_strand = 1,
+	)
+
+/obj/effect/spawner/mobspawner/whale_dusk
+	max_spawns = 1
+	mobspawn_table = list(
+	/mob/living/simple_animal/hostile/ordeal/lcb_pallid = 3,
+	/mob/living/simple_animal/hostile/ordeal/lcb_pallid/pistol = 1,
+	)
+
+/obj/effect/spawner/mobspawner/whale_dusk/duo
+	max_spawns = 2

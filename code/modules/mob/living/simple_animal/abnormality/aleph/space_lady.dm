@@ -21,7 +21,8 @@
 		ABNORMALITY_WORK_ATTACHMENT = list(40, 40, 40, 45, 45),
 		ABNORMALITY_WORK_REPRESSION = list(0, 0, 30, 30, 30),
 	)
-	work_damage_amount = 9	//Half white, half black damage
+	work_damage_upper = 9
+	work_damage_lower = 6	//Half white, half black damage
 	work_damage_type = list(WHITE_DAMAGE, BLACK_DAMAGE)
 	chem_type = /datum/reagent/abnormality/sin/gluttony	//Literally a black hole (and a white hole I guess)
 
@@ -53,6 +54,9 @@
 	var/explosion_damage = 30
 	var/can_act = TRUE
 	var/negative_range = 10
+	var/negative_damage = 20
+	var/negative_damage_scale = 10
+	var/list/been_hit = list()
 
 //She can't move or attack.
 /mob/living/simple_animal/hostile/abnormality/space_lady/Move()
@@ -129,7 +133,7 @@
 	var/turf/T = pick(GLOB.department_centers)
 	forceMove(T)
 
-//Inverts Sanity, kills the insane
+//Does white damage that scales with range, kills the insane
 /mob/living/simple_animal/hostile/abnormality/space_lady/proc/NegativeField()
 	say("Ashes to ashes...")
 	can_act = FALSE
@@ -143,14 +147,17 @@
 				continue
 			new /obj/effect/temp_visual/negativelook(T)
 			for(var/mob/living/carbon/human/L in T)
+				if(L in been_hit)
+					continue
+				been_hit += L
 				if(L.sanity_lost)					//DIE FOOL. LADY BLAST
-					L.death()
-				var/sanity_holder = L.sanityhealth	//Hold your current sanity
-				L.adjustSanityLoss(-20000) 			//bring you back to full sanity
-				L.adjustSanityLoss(sanity_holder)	//and then deal damage equal to your sanity before this attack
-
+					L.dust(TRUE, TRUE)
+				L.deal_damage(negative_damage, WHITE_DAMAGE)
 			all_turfs -= T
+		negative_damage += negative_damage_scale//Every tile it traves it does 10 more damage up to 120
 		SLEEP_CHECK_DEATH(3)
+	negative_damage = initial(negative_damage)
+	been_hit = list()
 	can_act = TRUE
 
 //Time stop
@@ -232,6 +239,7 @@
 	if(get_user_level(user) < 3)
 		datum_reference.qliphoth_change(-1)
 		animate(user, transform = user.transform*0.01, time = 5)
+		user.death(TRUE)
 		QDEL_IN(user, 5)
 	return TRUE
 

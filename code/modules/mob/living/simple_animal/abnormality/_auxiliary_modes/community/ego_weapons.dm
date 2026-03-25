@@ -2,7 +2,7 @@
 /obj/item/ego_weapon/support/dragon_staff
 	name = "dragon's staff"
 	desc = "A staff built from stained wood tipped with a strange, twisted skull. It reminds you of the the tall tales a father would tell."
-	special = "Use this weapon in your hand when wearing matching armor to shield nearby humans from 50 white damage."
+	special = "Use this weapon in your hand when wearing matching armor to shield nearby humans. The shield's health scales with your prudence."
 	icon_state = "dragon_staff"
 	icon = 'code/modules/mob/living/simple_animal/abnormality/_auxiliary_modes/community/!icons/ego_weapons.dmi'
 	lefthand_file = 'code/modules/mob/living/simple_animal/abnormality/_auxiliary_modes/community/!icons/ego_lefthand.dmi'
@@ -14,20 +14,39 @@
 	matching_armor = /obj/item/clothing/suit/armor/ego_gear/zayin/dragon_staff
 	ability_cooldown_time = 30 SECONDS
 	use_message = "You prepare a protective spell!"
+	var/inuse
+	var/effect
+	var/shield_time = 15 SECONDS
+
+/obj/item/ego_weapon/support/dragon_staff/attack_self(mob/user)
+	if(inuse)
+		return
+	return ..()
 
 /obj/item/ego_weapon/support/dragon_staff/Pulse(mob/living/carbon/human/user)
 	AdjustCircle(user)
-	if(do_after(user, 12, src))
-		playsound(user, 'sound/abnormalities/faelantern/faelantern_breach.ogg', 100)
-		to_chat(user, span_warning("[user] casts MASS BARKSKIN!"))
-		for(var/mob/living/carbon/human/L in livinginview(8, user))
-			if((!ishuman(L)) || L.stat == DEAD)
-				continue
-			L.apply_status_effect(/datum/status_effect/interventionshield/perfect)
+	inuse = TRUE
+	if(!do_after(user, 12, src))
+		if(effect)
+			qdel(effect)
+		ability_cooldown = world.time//hacky as hell fix but it works
+		inuse = FALSE
+		to_chat(user, span_notice("You stop casting the spell."))
+		return
+	inuse = FALSE
+	ability_cooldown = world.time + ability_cooldown_time
+	playsound(user, 'sound/abnormalities/faelantern/faelantern_breach.ogg', 100)
+	user.visible_message(span_warning("[user] casts MASS BARKSKIN!"),span_warning("You casts MASS BARKSKIN!"), null, COMBAT_MESSAGE_RANGE, user)
+	var/shield_hp = 10 + (max(10, get_attribute_level(user, PRUDENCE_ATTRIBUTE)/2))//20-75 shield hp
+	for(var/mob/living/carbon/human/L in livinginview(8, user))
+		if((!ishuman(L)) || L.stat == DEAD)
+			continue
+		L.apply_shield(/datum/status_effect/interventionshield/perfect, shield_health = shield_hp, shield_duration = shield_time)
 
 /obj/item/ego_weapon/support/dragon_staff/proc/AdjustCircle(mob/living/carbon/human/user)
 	playsound(user, 'sound/abnormalities/hatredqueen/attack.ogg', 100)
 	var/obj/effect/dragon_circle/S = new(get_turf(src))
+	effect = S
 	QDEL_IN(S, 1.2 SECONDS)
 	var/matrix/M = matrix(S.transform)
 	M.Translate(-8, 0)
@@ -78,11 +97,11 @@
 	user.apply_status_effect(/datum/status_effect/display/glimpse_thermal)
 
 //WAW
-/obj/item/ego_weapon/sunspit
-	name = "sunspit"
+/obj/item/ego_weapon/gleaming
+	name = "incandescent gleaming"
 	desc = "Goodness gracious, great mauls of fire!"
 	special = "Use in hand to prepare a powerful area attack. This attack requires charge to use, but deals armor-piercing burn damage."
-	icon_state = "sunspit"
+	icon_state = "gleaming"
 	icon = 'code/modules/mob/living/simple_animal/abnormality/_auxiliary_modes/community/!icons/ego_weapons.dmi'
 	lefthand_file = 'icons/mob/inhands/64x64_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/64x64_righthand.dmi'
@@ -112,10 +131,10 @@
 	var/wide_slash_angle = 290
 	var/current_orientation = 1
 
-/obj/item/ego_weapon/sunspit/proc/spin_reset()
+/obj/item/ego_weapon/gleaming/proc/spin_reset()
 	can_spin = TRUE
 
-/obj/item/ego_weapon/sunspit/attack(mob/living/target, mob/living/user)
+/obj/item/ego_weapon/gleaming/attack(mob/living/target, mob/living/user)
 	if(spinning)
 		return FALSE
 	..()
@@ -124,7 +143,7 @@
 	can_spin = FALSE
 	addtimer(CALLBACK(src, PROC_REF(spin_reset)), 12)
 
-/obj/item/ego_weapon/sunspit/attack_self(mob/living/user)
+/obj/item/ego_weapon/gleaming/attack_self(mob/living/user)
 	if(!charge || !CanUseEgo(user))
 		return ..()
 	if(charge_amount >= charge_cost)
@@ -132,7 +151,7 @@
 		return
 	return ..()
 
-/obj/item/ego_weapon/sunspit/ChargeAttack(mob/living/target, mob/living/user)
+/obj/item/ego_weapon/gleaming/ChargeAttack(mob/living/target, mob/living/user)
 	if(!can_spin)
 		to_chat(user,span_warning("You attacked too recently."))
 		return
@@ -145,7 +164,7 @@
 		aoe_damage = (force * justicemod)
 		addtimer(CALLBACK(src, PROC_REF(WideSlash), user), 1)
 
-/obj/item/ego_weapon/sunspit/proc/WideSlash(mob/living/carbon/human/user)
+/obj/item/ego_weapon/gleaming/proc/WideSlash(mob/living/carbon/human/user)
 	var/turf/TT = get_turf(get_step(user, user.dir))
 	var/turf/T = get_turf(src)
 	current_orientation = -current_orientation // Makes it so AOE is flipped each time
@@ -168,7 +187,7 @@
 		line = getline(T, T2)
 		addtimer(CALLBACK(src, PROC_REF(DoLineAttack), line, TT, user), i * 0.12)
 
-/obj/item/ego_weapon/sunspit/proc/DoLineAttack(list/line, atom/target, mob/living/carbon/human/user)
+/obj/item/ego_weapon/gleaming/proc/DoLineAttack(list/line, atom/target, mob/living/carbon/human/user)
 	var/list/been_hit = list()
 	for(var/turf/T in line)
 		if(locate(/obj/effect/temp_visual/smash_effect) in T)
@@ -178,7 +197,7 @@
 		new /obj/effect/temp_visual/fire/fast(T)
 		been_hit = user.HurtInTurf(T, been_hit, aoe_damage, FIRE, check_faction = TRUE)
 
-/obj/item/ego_weapon/sunspit/get_clamped_volume()
+/obj/item/ego_weapon/gleaming/get_clamped_volume()
 	return 40
 
 /obj/item/ego_weapon/furrows
@@ -268,7 +287,7 @@
 		burn_stack = B.stacks
 	else
 		burn_stack = 0
-	force = (80 + round(burn_stack/2))
+	force = (40 + round(burn_stack/2))
 	burn_enemy = burn_enemy + round(burn_stack/10)
 
 /obj/item/ego_weapon/shield/waxen/CanUseEgo(mob/living/user)
@@ -430,7 +449,7 @@
 	user.changeNext_move(CLICK_CD_MELEE * attack_speed)
 	user.Immobilize(stuntime)
 	//Visual stuff to give you better feedback
-	new /obj/effect/temp_visual/weapon_stun(get_turf(user))
+	user.HealingEffect("stun")
 
 /obj/projectile/ego_bullet/ochre
 	name = "ochre sheet"
@@ -550,7 +569,6 @@
 		return FALSE
 	var/mob/living/L = AM
 	L.deal_damage(damage_dealt, BLACK_DAMAGE)
-	new /obj/effect/temp_visual/damage_effect/black(get_turf(L))
 
 /obj/effect/gibspawner/generic/silent/liquid_miasma
 	gibtypes = list(/obj/effect/decal/cleanable/liquid_miasma)
@@ -666,21 +684,202 @@
 		A.attackby(src,user)
 	playsound(src, 'sound/weapons/fixer/generic/dodge.ogg', 50, FALSE, 9)
 
-/obj/item/ego_weapon/nightmares
+#define STATUS_EFFECT_REND_RED /datum/status_effect/display/rend
+#define STATUS_EFFECT_REND_WHITE /datum/status_effect/display/rend/white
+#define STATUS_EFFECT_REND_BLACK_WEAK /datum/status_effect/display/rend/black/weak
+#define STATUS_EFFECT_CRASH_CURSE /datum/status_effect/display/crash_curse
+
+/obj/item/ego_weapon/ranged/nightmares
 	name = "lucid nightmares"
-	desc = "The beast was a fabrication of the mind. When I worked the courage to visit the cabin myself, nothing remained but overgrown rubble."
+	desc = "The beast was a product of fear and imagination. When I worked the courage to visit the cabin myself, nothing remained but overgrown rubble."
+	special = "Activate in your hand to curse enemies with vulnerability in a small radius. Most curses apply a 10% weakness to BLACK damage, with a 20% weakness as a secondary effect. \
+	The third 'crashing curse' will deal up to 200 accumulated BLACK damage if the target is hit repeatedly."
 	icon_state = "nightmares"
+	inhand_icon_state = "nightmares"
 	icon = 'code/modules/mob/living/simple_animal/abnormality/_auxiliary_modes/community/!icons/ego_weapons.dmi'
 	lefthand_file = 'code/modules/mob/living/simple_animal/abnormality/_auxiliary_modes/community/!icons/ego_lefthand.dmi'
 	righthand_file = 'code/modules/mob/living/simple_animal/abnormality/_auxiliary_modes/community/!icons/ego_righthand.dmi'
-	force = 40
+	force = 30
 	damtype = BLACK_DAMAGE
+	projectile_path = /obj/projectile/ego_bullet/nightmares
+	weapon_weight = WEAPON_HEAVY
+	//shotsleft = 999
+	fire_delay = 1
+	burst_size = 5
+
+	fire_sound = 'sound/misc/moist_impact.ogg'
+	vary_fire_sound = TRUE
+	fire_sound_volume = 25
+
 	attack_verb_continuous = list("bashes", "jabs", "smacks")
 	attack_verb_simple = list("bash", "jab", "smack")
-	hitsound = 'sound/weapons/fixer/generic/gen1.ogg'
+	hitsound = 'sound/abnormalities/clouded_monk/monk_attack.ogg'
 	attribute_requirements = list(
 							FORTITUDE_ATTRIBUTE = 80,
 							PRUDENCE_ATTRIBUTE = 100,
 							TEMPERANCE_ATTRIBUTE = 80,
 							JUSTICE_ATTRIBUTE = 80
-							)//TODO: protects you from the cabin beast's sleep maze mechanic. Give it an upgraded version of ebony stem's attack.
+							)
+	var/cursing
+	var/curse_cooldown
+	var/curse_cooldown_time = 10 SECONDS
+	var/list/curses = list("drowning" = STATUS_EFFECT_REND_WHITE, "chattering" = STATUS_EFFECT_REND_RED, "crashing" = /datum/status_effect/display/crash_curse)
+	var/curse_damage = 45
+
+/obj/item/ego_weapon/ranged/nightmares/afterattack(atom/target, mob/living/user, flag, params)
+	if(!CanUseEgo(user))
+		return
+	if(!cursing)
+		return ..()
+	var/turf/target_turf = get_turf(target)
+	if((get_dist(user, target_turf) < 2) || !(target_turf in view(10, user)))
+		return ..()
+	if(!istype(target_turf))
+		return
+	AdjustCircle(user)
+	cursing = FALSE
+	if(!do_after(user, 12, src))
+		return
+	var/curse_type = pick(curses)
+	curse_cooldown = world.time + curse_cooldown_time
+	playsound(target_turf, 'sound/weapons/ego/paradise_ranged.ogg', 50, TRUE)
+	var/modified_damage = (curse_damage)//add a prudence mod
+	new /obj/effect/nightmares_vis/evil_circle(target_turf)
+	spawn(20)
+		for(var/turf/open/T in range(target_turf, 2))
+			new /obj/effect/temp_visual/smash_effect(T)
+			for(var/mob/living/L in user.HurtInTurf(T, list(), modified_damage, BLACK_DAMAGE, hurt_mechs = TRUE))
+				L.apply_status_effect(STATUS_EFFECT_REND_BLACK_WEAK)
+				L.apply_status_effect(curses[curse_type])
+		switch(curse_type)
+			if("drowning")
+				new /obj/effect/nightmares_vis/curse_drown(target_turf)
+			if("chattering")
+				new /obj/effect/nightmares_vis/curse_chatter(target_turf)
+			if("crashing")
+				new /obj/effect/nightmares_vis/curse_clock(target_turf)
+
+/obj/item/ego_weapon/ranged/nightmares/attack_self(mob/user)
+	shotsleft = initial(shotsleft)
+	if(cursing)
+		cursing = FALSE
+		to_chat(user,span_notice("You will no longer attack your cursor."))
+		return
+	if(curse_cooldown > world.time)
+		to_chat(user,span_warning("You cannot prepare a curse yet!"))
+		return
+	cursing = TRUE
+	to_chat(user,span_notice("You will now create a 5x5 curse at your cursor."))
+
+/obj/item/ego_weapon/ranged/nightmares/proc/AdjustCircle(mob/living/carbon/human/user)
+	playsound(user, 'sound/abnormalities/hatredqueen/attack.ogg', 100)
+	var/obj/effect/evil_circle/S = new(get_turf(src))
+	QDEL_IN(S, 1.2 SECONDS)
+	var/matrix/M = matrix(S.transform)
+	M.Translate(-8, 0)
+	if(user.dir != SOUTH)
+		S.layer -= 0.2
+	switch(user.dir)
+		if(EAST)
+			M.Scale(0.5, 1)
+			M.Translate(12, -8)
+		if(WEST)
+			M.Scale(0.5, 1)
+			M.Translate(-20, -8)
+		if(SOUTH)
+			M.Translate(0, -8)
+	S.transform = M
+
+/obj/projectile/ego_bullet/nightmares
+	name = "nightmarish tooth"
+	icon_state = "nightmare"
+	damage = 12
+	damage_type = BLACK_DAMAGE
+
+/obj/effect/evil_circle
+	name = "evil circle"
+	desc = "A magical circle with exotic patterns."
+	icon = 'ModularTegustation/Teguicons/tegu_effects.dmi'
+	icon_state = "evilcircle"
+	pixel_x = 8
+	base_pixel_x = 8
+	pixel_y = 8
+	base_pixel_y = 8
+	layer = ABOVE_MOB_LAYER
+	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+
+/obj/effect/nightmares_vis
+	icon = 'ModularTegustation/Teguicons/lc13_effects.dmi'
+	pixel_x = -8
+	base_pixel_x = -8
+	layer = ABOVE_MOB_LAYER
+	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	var/expiry_time = 1.2 SECONDS
+	var/fade_time = 0.5 SECONDS
+
+/obj/effect/nightmares_vis/Initialize()
+	..()
+	QDEL_IN(src, expiry_time)
+	spawn(fade_time)
+		animate(src, alpha = 0, time = (expiry_time - fade_time))
+
+/obj/effect/nightmares_vis/evil_circle
+	name = "chattering curse"
+	desc = "A magical circle drawn on the ground."
+	icon_state = "evil_circle"
+	expiry_time = 3 SECONDS
+	fade_time = 1 SECONDS
+
+/obj/effect/nightmares_vis/curse_drown
+	name = "drowning curse"
+	desc = "Hands arise from a dank pool."
+	icon_state = "nightmare_drown"
+
+/obj/effect/nightmares_vis/curse_chatter
+	name = "chattering curse"
+	desc = "Clearly it must be English."
+	icon_state = "nightmare_chatter"
+
+/obj/effect/nightmares_vis/curse_clock
+	name = "crashing curse"
+	desc = "This terrible magic inflicts severe pain after a delay."
+	icon = 'ModularTegustation/Teguicons/tegu_effects.dmi'
+	icon_state = "evilcircle_clock"
+	pixel_x = 0
+	base_pixel_x = 0
+
+/datum/status_effect/display/crash_curse
+	id = "crashing_curse"
+	display_name = "evildragon"
+	duration = 90
+	alert_type = null
+	var/max_damage = 200
+	var/dam_per_hit = 10
+	var/current_damage = 0
+
+/datum/status_effect/display/crash_curse/on_apply()
+	. = ..()
+	RegisterSignal(owner, COMSIG_MOB_APPLY_DAMGE, PROC_REF(stack_damage))
+	RegisterSignal(owner, COMSIG_ATOM_BULLET_ACT, PROC_REF(stack_damage))
+
+/datum/status_effect/display/crash_curse/on_remove()
+	. = ..()
+	UnregisterSignal(owner, COMSIG_MOB_APPLY_DAMGE)
+	UnregisterSignal(owner, COMSIG_ATOM_BULLET_ACT)
+	if(!current_damage)//0 damage stacked
+		return
+	owner.apply_damage(current_damage, BLACK_DAMAGE)
+	new /obj/effect/temp_visual/explosion(get_turf(owner))
+
+/datum/status_effect/display/crash_curse/proc/stack_damage()
+	SIGNAL_HANDLER
+
+	current_damage += dam_per_hit
+	if(current_damage >= max_damage)
+		on_remove()
+		qdel(src)
+
+#undef STATUS_EFFECT_REND_RED
+#undef STATUS_EFFECT_REND_WHITE
+#undef STATUS_EFFECT_REND_BLACK_WEAK
+#undef STATUS_EFFECT_CRASH_CURSE

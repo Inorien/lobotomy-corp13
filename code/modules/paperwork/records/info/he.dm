@@ -362,12 +362,16 @@
 		"When the work result was Bad, the Qliphoth Counter lowered with a high probability.",
 		"When the Qliphoth Counter reached 0, Nameless Fetus began crying. Employees who heard its wails complained of a headache. Furthermore, the Qliphoth Counters of all nearby Abnormalities gradually decreased over time.",
 		"While Nameless Fetus was in a crying state, the designated agent must approach it. After a moment of turmoil, the crying stopped.",
-		"Nameless Fetus will stop crying after a long period of time. The more employees in the facility, the longer it will cry.")
+		"Placing a dead body near Nameless Fetus seemed to have a similar result.",
+		"Nameless Fetus will stop crying after a long period of time. The more employees in the facility, the longer it will cry.",
+		"Whenever a dead body was placed into the Nameless Fetus’s mouth while it wasn't in a crying state, Nameless Fetus would eat the corpse, being satisfied for a few works.",
+		"While satisfied, Nameless Fetus' work rates were improved and it wouldn't try enter a crying state."
+		)
 
 // Doomsday Calendar
 /obj/item/paper/fluff/info/he/doomsday_calendar
 	abno_type = /mob/living/simple_animal/hostile/abnormality/doomsday_calendar
-	abno_code = "M-04-146"//M-04-04-05 in LCB
+	abno_code = "M-04-172"//M-04-04-05 in LCB
 	abno_info = list(
 		"When an employee entered the Containment Unit of another Abnormality, Doomsday Calendar’s Qliphoth Counter eventually decreased.",
 		"The lower the Qliphoth Counter, the more PE-Boxes Doomsday Calender produced. Instinct Work also had a higher success rate.",
@@ -420,7 +424,7 @@
 		"The blessing dissipated when F-02-24-1 died, panicked, or performed work on another abnormality. This also occured when a Qliphoth Meltdown on F-02-24 was ignored.",
 		"After the blessing was gone, a new employee could receive it.",
 		"When the blessing was lost, Puss in boots escaped from its Containment Unit and went on a rampage.",
-		"Puss in boots may sporadically appear near F-02-24-1 to offer its assistance when an abnormality breaches.")
+		"Puss in boots may appear near F-02-24-1 to offer its assistance when the facility reached the 1st Trumpet.")
 
 // Pinocchio
 /obj/item/paper/fluff/info/he/pinocchio
@@ -509,17 +513,6 @@
 		"If the employee won the game, they took severe RED damage, and if their fortitude was under level 3, T-01-187 cut off their arm. The employee also would get some stats under level 4, but not as much as compared to losing.",
 		"If the employee lost the game, T-01-187 presented them with a blessing, increasing all of their stats under level 4. If T-01-187 is going through a meltdown. Stats at level 4 and higher would increase by a smaller amount.")
 
-
-// Ardor Blossom Moth
-/obj/item/paper/fluff/info/he/ardor_blossom_moth
-	abno_type = /mob/living/simple_animal/hostile/abnormality/ardor_moth
-	abno_code = "T-02-182"
-	abno_info = list(
-		"When Attachment work was completed on T-02-182 the employee working started to stoke the moth's flames.",
-		"While stoked, work chance was increased, and the Qliphoth Counter increased.",
-		"Employees who worked on Ardor Blossom Moth without a proper fire had a small chance of lowering the Qliphoth counter by 2.",
-		)
-
 // Highway Devotee
 /obj/item/paper/fluff/info/he/highway
 	abno_type = /mob/living/simple_animal/hostile/abnormality/highway_devotee
@@ -580,7 +573,7 @@
 //Pink Shoes
 /obj/item/paper/fluff/info/he/pink_shoes
 	abno_type = /mob/living/simple_animal/hostile/abnormality/pink_shoes
-	abno_code = "F-04-147"//F-04-10-13 in LCB
+	abno_code = "F-04-149"//F-04-10-13 in LCB
 	abno_info = list(
 		"Employees with temperance level 1 immediately panicked after working on Pink Shoes.",
 		"When the qliphoth counter became 0, Pink Shoes escaped and wove ribbons in the surrounding area.",

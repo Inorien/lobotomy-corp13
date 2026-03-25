@@ -34,7 +34,8 @@
 		ABNORMALITY_WORK_ATTACHMENT = list(70, 70, 80, 80, 90),
 		ABNORMALITY_WORK_REPRESSION = list(60, 60, 50, 40, 40),
 	)
-	work_damage_amount = 3
+	work_damage_upper = 4
+	work_damage_lower = 2
 	work_damage_type = BLACK_DAMAGE
 	chem_type = /datum/reagent/abnormality/sin/envy
 
@@ -44,6 +45,7 @@
 	)
 	gift_type =  /datum/ego_gifts/hearth
 	abnormality_origin = ABNORMALITY_ORIGIN_WONDERLAB
+	can_spawn = FALSE // Normally doesn't appear
 
 	observation_prompt = "\"I am a home.\" <br>\
 		A happy little home, just for you. <br>\

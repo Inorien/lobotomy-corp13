@@ -34,8 +34,10 @@
 		ABNORMALITY_WORK_ATTACHMENT = 85,
 		ABNORMALITY_WORK_REPRESSION = 85,
 	)
-	work_damage_amount = 3
+	work_damage_upper = 3
+	work_damage_lower = 2
 	work_damage_type = BLACK_DAMAGE
+	can_spawn = FALSE // Normally doesn't appear
 
 	ego_list = list(
 		/datum/ego_datum/weapon/trick,

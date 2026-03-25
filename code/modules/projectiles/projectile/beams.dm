@@ -307,6 +307,38 @@
 	impact_light_range = 3
 	impact_light_color_override = LIGHT_COLOR_YELLOW
 
+/obj/projectile/beam/fairy/red
+	damage_type = RED_DAMAGE
+	light_color = COLOR_RED
+	beam_type = list("fairy_red", 'icons/effects/beam.dmi')
+	hitscan_light_color_override = COLOR_RED
+	muzzle_flash_color_override = COLOR_RED
+	impact_light_color_override = COLOR_RED
+
+/obj/projectile/beam/fairy/white
+	light_color = COLOR_WHITE
+	beam_type = list("fairy_white", 'icons/effects/beam.dmi')
+	damage_type = WHITE_DAMAGE
+	hitscan_light_color_override = COLOR_WHITE
+	muzzle_flash_color_override = COLOR_WHITE
+	impact_light_color_override = COLOR_WHITE
+
+/obj/projectile/beam/fairy/black
+	light_color = COLOR_PURPLE
+	beam_type = list("fairy_black", 'icons/effects/beam.dmi')
+	hitscan_light_color_override = COLOR_PURPLE
+	muzzle_flash_color_override = COLOR_PURPLE
+	impact_light_color_override = COLOR_PURPLE
+
+/obj/projectile/beam/fairy/pale
+	light_color = LIGHT_COLOR_CYAN
+	beam_type = list("fairy_pale", 'icons/effects/beam.dmi')
+	damage = 15
+	damage_type = PALE_DAMAGE
+	hitscan_light_color_override = LIGHT_COLOR_CYAN
+	muzzle_flash_color_override = LIGHT_COLOR_CYAN
+	impact_light_color_override = LIGHT_COLOR_CYAN
+
 /obj/projectile/beam/nobody
 	name = "whip"
 	icon_state = "nobody"
@@ -322,6 +354,7 @@
 	tracer_type = /obj/effect/projectile/tracer/laser/nobody
 	muzzle_type = /obj/effect/projectile/tracer/laser/nobody
 	impact_type = /obj/effect/projectile/impact/laser/nobody
+	var/mob/living/simple_animal/hostile/abnormality/titania/fairy//used for oberon
 
 /obj/effect/projectile/tracer/laser/nobody
 	name = "whip tracer"
@@ -331,27 +364,14 @@
 	name = "whip impact"
 	icon_state = "nobody"
 
-/obj/projectile/beam/oberon
-	name = "whip"
-	icon_state = "nobody"
-	damage = 7
-	hitsound = 'sound/weapons/slash.ogg'
-	hitsound_wall = 'sound/weapons/slash.ogg'
-	damage_type = BLACK_DAMAGE
-	hit_stunned_targets = TRUE
-	white_healing = FALSE
-	projectile_piercing = PASSMOB
-	projectile_phasing = (ALL & (~PASSMOB) & (~PASSCLOSEDTURF))
-	hitscan = TRUE
-	tracer_type = /obj/effect/projectile/tracer/laser/nobody
-	muzzle_type = /obj/effect/projectile/tracer/laser/nobody
-	impact_type = /obj/effect/projectile/impact/laser/nobody
-
-/obj/projectile/beam/oberon/on_hit(atom/target, blocked = FALSE)
+/obj/projectile/beam/nobody/on_hit(atom/target, blocked = FALSE)
 	. = ..()
-	if(iscarbon(target))
-		var/mob/living/carbon/M = target
-		M.apply_damage(7, RED_DAMAGE, null, M.run_armor_check(null, RED_DAMAGE), spread_damage = TRUE)
+	if(fairy)
+		if(ishuman(target))
+			var/mob/living/carbon/human/M = target
+			M.apply_damage(8, WHITE_DAMAGE, null, M.run_armor_check(null, WHITE_DAMAGE), spread_damage = TRUE)
+			if(M.sanity_lost)
+				fairy.Convert(M)
 
 /obj/projectile/beam/nobody_friendly
 	name = "whip"

@@ -33,9 +33,11 @@
 		ABNORMALITY_WORK_ATTACHMENT = list(20, 20, 35, 45, 45),
 		ABNORMALITY_WORK_REPRESSION = 0,
 	)
-	work_damage_amount = 12
+	work_damage_upper = 7
+	work_damage_lower = 5
 	work_damage_type = PALE_DAMAGE
 	chem_type = /datum/reagent/abnormality/sin/wrath
+	max_boxes = 24
 
 	attack_action_types = list(/datum/action/innate/abnormality_attack/judgement)
 
@@ -64,6 +66,7 @@
 	var/judgement_damage = 70
 	var/judgement_range = 12
 	var/judging = FALSE
+	var/omw_to_apoc = FALSE
 
 /datum/action/innate/abnormality_attack/judgement
 	name = "Judgement"
@@ -172,6 +175,8 @@
 
 /mob/living/simple_animal/hostile/abnormality/judgement_bird/BreachEffect(mob/living/carbon/human/user, breach_type)
 	. = ..()
+	omw_to_apoc = FALSE
+	docile_confinement = FALSE
 	if(IsCombatMap())
 		judgement_damage = 100
 		return
@@ -181,6 +186,17 @@
 	animate(src, alpha = 0, time = 10 SECONDS)
 	QDEL_IN(src, 10 SECONDS)
 	..()
+
+/mob/living/simple_animal/hostile/abnormality/judgement_bird/ListTargets()
+	if(omw_to_apoc) // I have places to be
+		return list()
+	else
+		return ..()
+
+/mob/living/simple_animal/hostile/abnormality/judgement_bird/FindTarget(list/possible_targets, HasTargetsList)
+	if(omw_to_apoc) // Nah I'd Walk
+		return
+	. = ..()
 
 //On-kill visual effect
 /obj/structure/jbird_noose

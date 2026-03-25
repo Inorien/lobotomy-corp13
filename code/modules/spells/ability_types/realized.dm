@@ -94,10 +94,10 @@
 			var/mob/living/simple_animal/hostile/H = L
 			H.TemporarySpeedChange(damage_slowdown, 5 SECONDS) // Slow down
 
-/mob/living/simple_animal/hostile/shrimp_soldier/friendly/capitalism_shrimp
+/mob/living/simple_animal/hostile/aminion/shrimp_soldier/friendly/capitalism_shrimp
 	name = "wellcheers corp liquidation officer"
 
-/mob/living/simple_animal/hostile/shrimp_soldier/friendly/capitalism_shrimp/Initialize()
+/mob/living/simple_animal/hostile/aminion/shrimp_soldier/friendly/capitalism_shrimp/Initialize()
 	.=..()
 	QDEL_IN(src, (90 SECONDS))
 
@@ -112,7 +112,7 @@
 
 /obj/effect/proc_holder/ability/shrimp/Perform(target, mob/user)
 	for(var/i = 1 to 6)
-		new /mob/living/simple_animal/hostile/shrimp_soldier/friendly/capitalism_shrimp(get_turf(user))
+		new /mob/living/simple_animal/hostile/aminion/shrimp_soldier/friendly/capitalism_shrimp(get_turf(user))
 	return ..()
 
 /* Big Bird - Eyes of God */
@@ -897,7 +897,7 @@
 				been_hit += L
 				L.adjustBruteLoss(-70)
 				L.adjustSanityLoss(-70)
-				new /obj/effect/temp_visual/healing(get_turf(L))
+				HealingEffect("healing")
 				if(istype(L.get_item_by_slot(ITEM_SLOT_OCLOTHING), /obj/item/clothing/suit/armor/ego_gear/realization/duality_yin))
 					L.apply_status_effect(/datum/status_effect/duality_yang)
 			all_turfs -= T
@@ -1157,10 +1157,10 @@
 
 /obj/effect/proc_holder/ability/wellcheers/Perform(target, mob/user)
 	for(var/i = 1 to 3)
-		new /mob/living/simple_animal/hostile/shrimp/friendly(get_turf(user))
+		new /mob/living/simple_animal/hostile/aminion/shrimp/friendly(get_turf(user))
 	return ..()
 
-/mob/living/simple_animal/hostile/shrimp/friendly //HUGE buff shrimp
+/mob/living/simple_animal/hostile/aminion/shrimp/friendly //HUGE buff shrimp
 	name = "wellcheers boat fisherman"
 	health = 400
 	maxHealth = 400
@@ -1170,13 +1170,17 @@
 	icon_state = "wellcheers_ripped"
 	icon_living = "wellcheers_ripped"
 	faction = list("neutral", "shrimp")
+	threat_level = WAW_LEVEL
+	can_affect_emergency = FALSE
+	trigger_lights = FALSE
+	fear_level = 0
 
-/mob/living/simple_animal/hostile/shrimp/friendly/Initialize()
+/mob/living/simple_animal/hostile/aminion/shrimp/friendly/Initialize()
 	.=..()
 	AddComponent(/datum/component/knockback, 1, FALSE, TRUE)
 	QDEL_IN(src, (90 SECONDS))
 
-/mob/living/simple_animal/hostile/shrimp/friendly/AttackingTarget(atom/attacked_target)
+/mob/living/simple_animal/hostile/aminion/shrimp/friendly/AttackingTarget(atom/attacked_target)
 	. = ..()
 	if(.)
 		var/mob/living/L = attacked_target
@@ -1211,7 +1215,7 @@
 		H.adjustBruteLoss(-70)
 		H.adjustSanityLoss(-70)
 		H.apply_status_effect(/datum/status_effect/flesh2)
-		new /obj/effect/temp_visual/healing(get_turf(H))
+		HealingEffect("healing")
 	return ..()
 
 /datum/status_effect/flesh1

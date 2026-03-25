@@ -17,7 +17,8 @@
 		ABNORMALITY_WORK_REPRESSION = 50,
 	)
 	is_flying_animal = TRUE
-	work_damage_amount = 3
+	work_damage_upper = 4
+	work_damage_lower = 2
 	work_damage_type = WHITE_DAMAGE
 	chem_type = /datum/reagent/abnormality/sin/gloom
 
@@ -27,6 +28,7 @@
 	)
 	gift_type =  /datum/ego_gifts/sorrow
 	abnormality_origin = ABNORMALITY_ORIGIN_WONDERLAB
+	can_spawn = FALSE // Normally doesn't appear
 
 	observation_prompt = "A girl in front of you dances, stumbling to and fro. <br>\
 		Her feet are chopped off at the ankles, and yet they still move. <br>\

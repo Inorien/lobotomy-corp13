@@ -33,7 +33,8 @@
 						ABNORMALITY_WORK_ATTACHMENT = 10,
 						ABNORMALITY_WORK_REPRESSION = list(75, 75, 95, 95, 95)
 						)
-	work_damage_amount = 5
+	work_damage_upper = 5
+	work_damage_lower = 3
 	work_damage_type = RED_DAMAGE
 	chem_type = /datum/reagent/abnormality/sin/gloom
 
@@ -115,14 +116,16 @@
 /mob/living/simple_animal/hostile/abnormality/shock_centipede/AttemptWork(mob/living/carbon/human/user, work_type)
 	//Temp too high, random damage type time.
 	if(get_attribute_level(user, JUSTICE_ATTRIBUTE) <= 60)
-		work_damage_amount = 7
+		work_damage_upper = 6
+		work_damage_lower = 4
 	if(datum_reference?.qliphoth_meter == 1)
 		work_damage_type = BLACK_DAMAGE
 	return ..()
 
 /mob/living/simple_animal/hostile/abnormality/shock_centipede/PostWorkEffect(mob/living/carbon/human/user, work_type, pe, work_time, canceled)
-	work_damage_amount = 5
-	work_damage_type = RED_DAMAGE
+	work_damage_upper = initial(work_damage_upper)
+	work_damage_lower = initial(work_damage_lower)
+	work_damage_type = initial(work_damage_type)
 
 /mob/living/simple_animal/hostile/abnormality/shock_centipede/proc/CheckQliphoth(mob/living/carbon/human/user, work_type, pe, work_time, canceled)
 	if(datum_reference?.qliphoth_meter == 3 && work_type == ABNORMALITY_WORK_REPRESSION)
@@ -142,6 +145,7 @@
 
 /* Success Effect */
 /mob/living/simple_animal/hostile/abnormality/shock_centipede/SuccessEffect(mob/living/carbon/human/user, work_type, pe)
+	. = ..()
 	if (!CheckQliphoth(user, work_type, pe))
 		return
 	if(datum_reference?.qliphoth_meter == 2)
@@ -153,6 +157,7 @@
 
 /* Neutral Effect */
 /mob/living/simple_animal/hostile/abnormality/shock_centipede/NeutralEffect(mob/living/carbon/human/user, work_type, pe)
+	. = ..()
 	if (!CheckQliphoth(user, work_type, pe))
 		return
 	if(datum_reference?.qliphoth_meter == 2)
@@ -166,6 +171,7 @@
 
 /* Failure Effect */
 /mob/living/simple_animal/hostile/abnormality/shock_centipede/FailureEffect(mob/living/carbon/human/user, work_type, pe)
+	. = ..()
 	if (!CheckQliphoth(user, work_type, pe))
 		return
 	datum_reference.qliphoth_change(-1)
@@ -177,7 +183,7 @@
 	if(amount > 0)
 		accumulated_charge += amount
 	while(accumulated_charge >= 1)
-		new /obj/effect/temp_visual/healing/charge(get_turf(src))
+		HealingEffect("charge")
 		accumulated_charge = clamp(accumulated_charge - 1,0,20)
 	charge = clamp(charge + amount, 0, max_charge)
 

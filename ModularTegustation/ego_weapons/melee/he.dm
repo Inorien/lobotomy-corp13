@@ -646,7 +646,7 @@
 	desc = "You should consider it an honor. The humans who have joined me could attain greater wealth and glory."
 	special = "This weapon has a combo system. To turn off this combo system, use in hand."
 	icon_state = "inheritance"
-	force = 8
+	force = 5
 	damtype = RED_DAMAGE
 	attack_verb_continuous = list("stabs", "attacks", "slashes")
 	attack_verb_simple = list("stab", "attack", "slash")
@@ -655,6 +655,7 @@
 							JUSTICE_ATTRIBUTE = 40
 							)
 	var/combo = 0
+	modified_attack_speed = 0.3
 	var/combo_time
 	var/combo_wait = 10
 	var/combo_on = TRUE
@@ -913,6 +914,8 @@
 	if((get_dist(user, A) < 2) || (!(can_see(user, A, dash_range))))
 		return
 	if(do_after(user, 5, src))
+		user.Immobilize(0.6 SECONDS)
+		ADD_TRAIT(src, TRAIT_NODROP, STICKY_NODROP)
 		dash_cooldown = world.time + dash_cooldown_time
 		playsound(src, 'sound/abnormalities/ichthys/jump.ogg', 50, FALSE, -1)
 		animate(user, alpha = 1,pixel_x = 0, pixel_z = 16, time = 0.1 SECONDS)
@@ -923,11 +926,13 @@
 		else if(QDELETED(A) || !can_see(user, A, dash_range))
 			animate(user, alpha = 255,pixel_x = 0, pixel_z = -16, time = 0.1 SECONDS)
 			user.pixel_z = 0
+			REMOVE_TRAIT(src, TRAIT_NODROP, STICKY_NODROP)
 			return
 		for(var/i in 2 to get_dist(user, A))
 			step_towards(user,A)
 		if(get_dist(user, A) < 2)
 			JumpAttack(A,user)
+		REMOVE_TRAIT(src, TRAIT_NODROP, STICKY_NODROP)
 		to_chat(user, span_warning("You jump towards [A]!"))
 		animate(user, alpha = 255,pixel_x = 0, pixel_z = -16, time = 0.1 SECONDS)
 		user.pixel_z = 0
@@ -978,11 +983,11 @@
 	user.adjustSanityLoss(5)
 	..()
 
-/obj/item/ego_weapon/replica
-	name = "replica"
+/obj/item/ego_weapon/regs
+	name = "move-in reg"
 	desc = "A mechanical yet sinewy claw ribbed with circuitry. It reminds you of toy claw machines."
 	special = "The charge effect of this weapon trips humans instead of injuring them."
-	icon_state = "replica"
+	icon_state = "regs"
 	force = 16
 	damtype = BLACK_DAMAGE
 	attack_verb_continuous = list("grabs", "pinches", "snips", "attacks")
@@ -1000,11 +1005,11 @@
 	var/gun_cooldown
 	var/gun_cooldown_time = 1.2 SECONDS
 
-/obj/item/ego_weapon/replica/Initialize()
+/obj/item/ego_weapon/regs/Initialize()
 	RegisterSignal(src, COMSIG_PROJECTILE_ON_HIT, PROC_REF(projectile_hit))
 	return ..()
 
-/obj/item/ego_weapon/replica/afterattack(atom/target, mob/living/user, proximity_flag, clickparams)
+/obj/item/ego_weapon/regs/afterattack(atom/target, mob/living/user, proximity_flag, clickparams)
 	if(!CanUseEgo(user))
 		return
 
@@ -1017,7 +1022,7 @@
 		if(!isturf(proj_turf))
 			return
 
-		var/obj/projectile/ego_bullet/replica/G = new /obj/projectile/ego_bullet/replica(proj_turf)
+		var/obj/projectile/ego_bullet/regs/G = new /obj/projectile/ego_bullet/regs(proj_turf)
 		G.fired_from = src //for signal check
 		playsound(user, 'sound/abnormalities/kqe/load3.ogg', 100, TRUE)
 		G.firer = user
@@ -1025,7 +1030,7 @@
 		G.fire()
 		gun_cooldown = world.time + gun_cooldown_time
 
-/obj/item/ego_weapon/replica/proc/projectile_hit(atom/fired_from, atom/movable/firer, atom/target, Angle)
+/obj/item/ego_weapon/regs/proc/projectile_hit(atom/fired_from, atom/movable/firer, atom/target, Angle)
 	SIGNAL_HANDLER
 	if(!isliving(target))
 		return TRUE
@@ -1128,7 +1133,7 @@
 		charge_amount += added_charge
 		accumulated_charge += 1
 		if(accumulated_charge >= 10)
-			new /obj/effect/temp_visual/healing/charge(get_turf(src))
+			HealingEffect("charge")
 			accumulated_charge = 0
 
 /obj/effect/portal/warp
@@ -1759,8 +1764,8 @@
 							FORTITUDE_ATTRIBUTE = 40
 							)
 
-/obj/item/ego_weapon/mini/voodoo
-	name = "voodoo"
+/obj/item/ego_weapon/mini/scissors
+	name = "scissors"
 	desc = "What seems to be a giant half of a scissors pair."
 	icon_state = "voodoo"
 	special = "This weapon can be paired with a second copy to use both at the same time."
@@ -1775,12 +1780,16 @@
 							FORTITUDE_ATTRIBUTE = 40
 							)
 
-/obj/item/ego_weapon/mini/voodoo/attack(mob/living/target, mob/living/user)
+/obj/item/ego_weapon/mini/scissors/Initialize()
+	name = "I'll go fer scissors. How 'bout you?"
+	..()
+
+/obj/item/ego_weapon/mini/scissors/attack(mob/living/target, mob/living/user)
 	if(!CanUseEgo(user))
 		return
 	var/combo = FALSE
 	var/mob/living/carbon/human/myman = user
-	var/obj/item/ego_weapon/mini/voodoo/Y = myman.get_inactive_held_item()
+	var/obj/item/ego_weapon/mini/scissors/Y = myman.get_inactive_held_item()
 	if(istype(Y)) //dual wielding? if so...
 		combo = TRUE //hits twice, you're spending more PE then you would getting a WAW anyways
 	..()
@@ -1792,11 +1801,11 @@
 			target.attacked_by(Y, user)
 			log_combat(user, target, pick(attack_verb_continuous), Y.name, "(INTENT: [uppertext(user.a_intent)]) (DAMTYPE: [uppertext(Y.damtype)])")
 
-/obj/item/ego_weapon/nixie
-	name = "nixie divergence"
+/obj/item/ego_weapon/crushbound
+	name = "crushbound past"
 	desc = "It looks like a hammer with a steam exhaust port."
 	special = "Use in hand to unlock its full power."
-	icon_state = "nixie"
+	icon_state = "crushbound"
 	lefthand_file = 'icons/mob/inhands/64x64_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/64x64_righthand.dmi'
 	inhand_x_dimension = 64
@@ -1813,7 +1822,7 @@
 							)
 	var/charged = FALSE
 
-/obj/item/ego_weapon/nixie/attack(mob/living/M, mob/living/user)
+/obj/item/ego_weapon/crushbound/attack(mob/living/M, mob/living/user)
 	if(charged)
 		playsound(src, 'sound/machines/clockcult/steam_whoosh.ogg', 100)
 		set_light(0)
@@ -1821,7 +1830,7 @@
 	force = 44
 	charged = FALSE
 
-/obj/item/ego_weapon/nixie/attack_self(mob/user)
+/obj/item/ego_weapon/crushbound/attack_self(mob/user)
 	if(!CanUseEgo(user))
 		return
 	if(charged)
@@ -1834,14 +1843,14 @@
 		set_light(3, 6, "#D4FAF37")
 		PlayChargeSound()
 
-/obj/item/ego_weapon/nixie/proc/PlayChargeSound()
+/obj/item/ego_weapon/crushbound/proc/PlayChargeSound()
 	set waitfor = FALSE
 	sleep(10)
 	if(!charged) //We don't play the sound if the player has already attacked by now
 		return
 	playsound(src.loc, 'sound/abnormalities/clock/turn_on.ogg', 75, TRUE)
 
-/obj/item/ego_weapon/nixie/get_clamped_volume()
+/obj/item/ego_weapon/crushbound/get_clamped_volume()
 	return 50
 
 //Gimmicky weapon with a potentially high payout
@@ -1853,6 +1862,7 @@
 	icon_state = "sunshower"
 	force = 12
 	attack_speed = 1
+	modified_attack_speed = 1.4
 	damtype = BLACK_DAMAGE
 	attack_verb_continuous = list("slices", "cleaves", "chops")
 	attack_verb_simple = list("slice", "cleave", "chop")
@@ -1946,17 +1956,17 @@
 		return
 	if(get_dist(target, user) > 2)//Spear range for full damage.
 		force = 11
+	var/turf/end_turf = get_ranged_target_turf_direct(user, target, 4, 0)
 	. = ..()
 	force = initial(force)
 	var/list/been_hit = list(target)
-	var/turf/end_turf = get_ranged_target_turf_direct(user, target, 4, 0)
 	for(var/turf/T in getline(user, end_turf))
 		if(user in T)
 			continue
 		for(var/turf/T2 in view(T,1))
 			new /obj/effect/temp_visual/smash_effect(T2)
 			for(var/mob/living/L in T2)
-				var/aoe = 5
+				var/aoe = 11
 				var/userjust = (get_modified_attribute_level(user, JUSTICE_ATTRIBUTE))
 				var/justicemod = 1 + userjust/100
 				aoe*=justicemod
@@ -2152,6 +2162,7 @@
 	desc = "Some old bandages that look like they have been worn for a long time."
 	icon_state = "desert"
 	force = 9
+	modified_attack_speed = 0.7
 	attack_speed = 0.7
 	hitsound = 'sound/weapons/fixer/generic/fist1.ogg'
 	attribute_requirements = list(

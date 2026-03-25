@@ -40,9 +40,11 @@
 		ABNORMALITY_WORK_ATTACHMENT = 0,
 		ABNORMALITY_WORK_REPRESSION = list(0, 0, 45, 50, 55),
 	)
-	work_damage_amount = 7
+	work_damage_upper = 6
+	work_damage_lower = 5
 	work_damage_type = WHITE_DAMAGE
 	chem_type = /datum/reagent/abnormality/sin/pride
+	max_boxes = 24
 	death_message = "weeps a green sludge while clutching her brooch."
 	base_pixel_x = -16
 	pixel_x = -16
@@ -73,7 +75,7 @@
 	var/dead_humans = 0
 	var/abnos_breached = 0
 	//brothers from left to right
-	var/list/family_status = list(
+	var/list/family_status = alist(
 		1 = FALSE,
 		2 = FALSE,
 		3 = FALSE,

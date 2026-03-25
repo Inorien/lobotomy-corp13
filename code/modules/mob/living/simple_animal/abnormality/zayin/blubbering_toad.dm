@@ -6,7 +6,8 @@
 	icon = 'ModularTegustation/Teguicons/64x64.dmi'
 	icon_state = "blubbering"
 	icon_living = "blubbering"
-	icon_dead = "blubbering_egg"
+	icon_dead = "blubbering_dead"
+	core_icon = "blubbering_egg"
 	portrait = "blubbering_toad"
 	var/icon_tongue = "blubbering_tongue"
 	del_on_death = FALSE
@@ -24,7 +25,6 @@
 	move_to_delay = 3
 	melee_damage_lower = 2
 	melee_damage_upper = 4
-	max_boxes = 10
 	ranged = TRUE
 	attack_sound = 'sound/abnormalities/blubbering_toad/attack.ogg'
 	attack_verb_continuous = "mauls"
@@ -36,7 +36,8 @@
 		ABNORMALITY_WORK_ATTACHMENT = list(50, 40, 30, 30, 30),
 		ABNORMALITY_WORK_REPRESSION = list(70, 30, 30, 30, 30),
 	)
-	work_damage_amount = 2
+	work_damage_upper = 2
+	work_damage_lower = 1
 	work_damage_type = BLACK_DAMAGE
 
 	// Petting
@@ -286,8 +287,8 @@
 		if(health < (maxHealth / 5)) //20% health or lower
 			melee_damage_lower = 15
 			melee_damage_upper = 25
-			icon_living = "blubbering_egg"
-			icon_tongue = "blubbering_egg_tongue"
+			icon_living = "blubbering_dead"
+			icon_tongue = "blubbering_dead_tongue"
 			icon_state = icon_living
 			melee_damage_type = WHITE_DAMAGE
 			broken = TRUE

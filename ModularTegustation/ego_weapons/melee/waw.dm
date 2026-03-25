@@ -40,7 +40,8 @@
 	special = "This weapon has a combo system. To turn off this combo system, use in hand. \
 			This weapon has a fast attack speed"
 	icon_state = "despair"
-	force = 18
+	force = 10
+	modified_attack_speed = 0.4
 	damtype = WHITE_DAMAGE
 	swingstyle = WEAPONSWING_THRUST
 	attack_verb_continuous = list("stabs", "attacks", "slashes")
@@ -224,7 +225,7 @@
 	special = "This weapon hits faster than usual."
 	force = 12
 	swingstyle = WEAPONSWING_LARGESWEEP
-	attack_speed = 0.5
+	modified_attack_speed = 0.6
 	damtype = RED_DAMAGE
 	hitsound = 'sound/abnormalities/redhood/attack_1.ogg'
 	attribute_requirements = list(
@@ -258,7 +259,7 @@
 		else
 			hitsound = 'sound/abnormalities/redhood/attack_1.ogg'
 	force *= (1 + (combo * 0.15))
-	user.changeNext_move(CLICK_CD_MELEE * (1 + (combo * 0.2)))
+	user.changeNext_move(CLICK_CD_MELEE * (0.5 + (combo * 0.2)))
 	if(combo >= 3)
 		combo = 0
 	..()
@@ -864,13 +865,18 @@
 /obj/item/ego_weapon/moonlight
 	name = "moonlight"
 	desc = "The serpentine ornament is loyal to the original owner’s taste. The snake’s open mouth represents the endless yearning for music."
-	special = "Use this weapon in hand to heal the sanity of those around you."
+	special = "Activate this weapon in your hand to deal damage in a small area. If it hits something, apply black shields to nearby humans."
 	icon_state = "moonlight"
 	force = 20
 	damtype = WHITE_DAMAGE
 	attack_verb_continuous = list("beats", "jabs")
 	attack_verb_simple = list("beat", "jab")
+	var/ability_cooldown
+	var/ability_cooldown_time = 30 SECONDS
+	var/shield_hp = 50
+	var/aoe_damage = 30
 	var/inuse
+	var/shield_time = 15 SECONDS
 	attribute_requirements = list(
 							TEMPERANCE_ATTRIBUTE = 80
 							)
@@ -880,17 +886,35 @@
 	if(!CanUseEgo(user))
 		return
 
+	if(ability_cooldown > world.time)
+		to_chat(user,span_warning("You used its ability too recently."))
+		return
+
 	if(inuse)
 		return
+
 	inuse = TRUE
-	if(do_after(user, 30))	//3 seconds for a big heal.
-		playsound(src, 'sound/magic/staff_healing.ogg', 200, FALSE, 9)
-		for(var/mob/living/carbon/human/L in range(5, get_turf(user)))
-			if(L.is_working)
-				to_chat(L, span_nicegreen("The powers of the moon are the same as the powers of the sun. The redundancy of moonlight does not make this work any less mind-numbing."))
-				continue
-			L.adjustSanityLoss(-10)
+
+	if(!do_after(user, 15))	//1.5 seconds is fair enough for getting a shield
+		inuse = FALSE
+		return
 	inuse = FALSE
+	ability_cooldown = ability_cooldown_time + world.time
+	var/aoe = aoe_damage
+	var/userjust = (get_modified_attribute_level(user, JUSTICE_ATTRIBUTE))
+	var/justicemod = 1 + userjust / 100
+	aoe *= justicemod
+	aoe *= force_multiplier
+	var/list/been_hit = list()
+	for(var/turf/T in view(user, 1))
+		been_hit += user.HurtInTurf(T, list(), aoe, damtype, check_faction = TRUE, hurt_mechs = TRUE)
+		new /obj/effect/temp_visual/revenant(T)
+	playsound(src, 'sound/magic/wandodeath.ogg', 200, FALSE, 9)
+
+	if(LAZYLEN(been_hit))
+		playsound(src, 'sound/magic/staff_healing.ogg', 200, FALSE, 9)
+		for(var/mob/living/carbon/human/L in range(8, get_turf(user)))
+			L.apply_shield(/datum/status_effect/interventionshield/black, shield_health = shield_hp, shield_duration = shield_time)
 
 
 /obj/item/ego_weapon/heaven
@@ -937,9 +961,9 @@
 		return FALSE
 	if(isliving(target))
 		var/mob/living/simple_animal/M = target
-		if(!ishuman(M) && !M.has_status_effect(/datum/status_effect/rend_white))
+		if(!ishuman(M) && !M.has_status_effect(/datum/status_effect/display/rend/white))
 			new /obj/effect/temp_visual/cult/sparks(get_turf(M))
-			M.apply_status_effect(/datum/status_effect/rend_white)
+			M.apply_status_effect(/datum/status_effect/display/rend/white)
 
 // Reworked to use the bloodfeast component. Collect blood to improve your life leech ability.
 /obj/item/ego_weapon/dipsia
@@ -1146,7 +1170,7 @@
 			if(L==user)
 				continue
 			L.adjustBruteLoss(-10)
-			new /obj/effect/temp_visual/healing(get_turf(L))
+			L.HealingEffect("healing")
 
 /obj/item/ego_weapon/diffraction
 	name = "diffraction"
@@ -1172,56 +1196,44 @@
 	desc = "A giant novelty pen."
 	special = "This weapon marks enemies with a random damage type. They take that damage after 5 seconds."
 	icon_state = "infinity"
-	force = 24
+	force = 16
 	hitsound = 'sound/abnormalities/book/scribble.ogg'
 	attribute_requirements = list(
 							JUSTICE_ATTRIBUTE = 80
 							)
 	damtype = PALE_DAMAGE
-	stuntime = 4
-	var/mark_damage
+	var/mark_damage = 12
 	var/mark_type = RED_DAMAGE
 
-//Replaces the normal attack with a mark
 /obj/item/ego_weapon/mini/infinity/attack(mob/living/target, mob/living/user)
 	if(!CanUseEgo(user))
 		return
 	..()
-	if(do_after(user, 2, src))
-		playsound(loc, hitsound, 120, TRUE, extrarange = stealthy_audio ? SILENCED_SOUND_EXTRARANGE : -1, falloff_distance = 0)
-		target.visible_message(span_danger("[user] markes [target]!"), \
-						span_userdanger("[user] marks you!"), COMBAT_MESSAGE_RANGE, user)
-		to_chat(user, span_danger("You enscribe a code on [target]!"))
+	mark_type = pick(RED_DAMAGE,WHITE_DAMAGE, BLACK_DAMAGE)
+	var/color = "red"
+	if(mark_type == WHITE_DAMAGE)
+		color = "white"
+	if(mark_type == BLACK_DAMAGE)
+		color = "black"
+	target.visible_message(span_danger("[user] markes [target] with a [color] code!"), \
+	span_userdanger("[user] marks you with a [color] code!"), COMBAT_MESSAGE_RANGE, user)
+	to_chat(user, span_danger("You enscribe a [color] code on [target]!"))
 
-		mark_damage = force*2
-		//I gotta grab  justice here
-		var/userjust = (get_modified_attribute_level(user, JUSTICE_ATTRIBUTE))
-		var/justicemod = 1 + userjust/100
-		mark_damage *= justicemod
-		mark_damage *= force_multiplier
+	var/obj/effect/infinity/P = new get_turf(target)
+	if(mark_type == RED_DAMAGE)
+		P.color = COLOR_RED
 
-		var/obj/effect/infinity/P = new get_turf(target)
-		if(mark_type == RED_DAMAGE)
-			P.color = COLOR_RED
+	if(mark_type == BLACK_DAMAGE)
+		P.color = COLOR_PURPLE
 
-		if(mark_type == BLACK_DAMAGE)
-			P.color = COLOR_PURPLE
-
-		addtimer(CALLBACK(src, PROC_REF(cast), target, user, mark_type), 5 SECONDS)
-
-		//So you can see what the next mark is.
-		mark_type = pick(RED_DAMAGE, WHITE_DAMAGE, BLACK_DAMAGE)
-		damtype = mark_type
-
-	else
-		to_chat(user, "<span class='spider'><b>Your attack was interrupted!</b></span>")
-		return
+	addtimer(CALLBACK(src, PROC_REF(cast), target, user, mark_type), 5 SECONDS)
 
 /obj/effect/infinity
 	name = "mark"
 	icon = 'icons/effects/cult_effects.dmi'
 	icon_state = "rune3center"
 	layer = ABOVE_ALL_MOB_LAYER
+	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 
 /obj/effect/infinity/Initialize()
 	. = ..()
@@ -1229,10 +1241,16 @@
 	QDEL_IN(src, 1 SECONDS)
 
 /obj/item/ego_weapon/mini/infinity/proc/cast(mob/living/target, mob/living/user, damage_color)
-	target.apply_damage(mark_damage, damage_color, null, target.run_armor_check(null, damage_color), spread_damage = TRUE)		//MASSIVE fuckoff punch
+	if(!target)
+		return
+	var/userjust = (get_modified_attribute_level(user, JUSTICE_ATTRIBUTE))
+	var/justicemod = 1 + userjust/100
+	var/modified_damage = mark_damage
+	modified_damage *= justicemod
+	modified_damage *= force_multiplier
+	target.apply_damage(modified_damage, damage_color, null, target.run_armor_check(null, damage_color), spread_damage = TRUE)		//MASSIVE fuckoff punch
 	playsound(loc, 'sound/weapons/fixer/generic/energyfinisher3.ogg', 15, TRUE, extrarange = stealthy_audio ? SILENCED_SOUND_EXTRARANGE : -1, falloff_distance = 0)
 	new /obj/effect/temp_visual/dir_setting/bloodsplatter(get_turf(target), pick(GLOB.alldirs))
-	mark_damage = force
 
 /obj/item/ego_weapon/amrita
 	name = "amrita"
@@ -1303,7 +1321,8 @@
 /obj/item/ego_weapon/wield/discord
 	name = "discord"
 	desc = "The existence of evil proves the existence of good, just as light proves the existence of darkness."
-	special = "This weapon attacks thrice in rapid succession when being wielded.\nAttacks with this weapon will heal a nearby ally using Assonance."
+	special = "This weapon attacks thrice in rapid succession when being wielded.\n \
+		Attacks with this weapon will heal a nearby ally using Assonance."
 	icon_state = "discord"
 	force = 19
 	wielded_force = 22
@@ -1352,7 +1371,7 @@
 				continue
 			Yang.adjustBruteLoss(-heal_amount)
 			Yang.adjustSanityLoss(-heal_amount)
-			new /obj/effect/temp_visual/healing(get_turf(Yang))
+			Yang.HealingEffect("healing")
 			break
 
 /obj/item/ego_weapon/shield/innocence
@@ -1422,6 +1441,8 @@
 	..()
 	if(do_after(user, 5, src))
 		dash_cooldown = world.time + dash_cooldown_time
+		user.Immobilize(0.6 SECONDS)
+		ADD_TRAIT(src, TRAIT_NODROP, STICKY_NODROP)
 		playsound(src, 'sound/abnormalities/babayaga/charge.ogg', 50, FALSE, -1)
 		animate(user, alpha = 1,pixel_x = 0, pixel_z = 16, time = 0.1 SECONDS)
 		user.pixel_z = 16
@@ -1429,6 +1450,7 @@
 		if(QDELETED(user))
 			return
 		else if(QDELETED(A) || !can_see(user, A, dash_range))
+			REMOVE_TRAIT(src, TRAIT_NODROP, STICKY_NODROP)
 			animate(user, alpha = 255,pixel_x = 0, pixel_z = -16, time = 0.1 SECONDS)
 			user.pixel_z = 0
 			return
@@ -1436,6 +1458,7 @@
 			step_towards(user,A)
 		if((get_dist(user, A) < 2))
 			JumpAttack(A,user)
+		REMOVE_TRAIT(src, TRAIT_NODROP, STICKY_NODROP)
 		to_chat(user, span_warning("You jump towards [A]!"))
 		animate(user, alpha = 255,pixel_x = 0, pixel_z = -16, time = 0.1 SECONDS)
 		user.pixel_z = 0
@@ -1685,7 +1708,7 @@
 	inhand_y_dimension = 96
 	force = 24
 	reach = 2		//Has 2 Square Reach.
-	stuntime = 5	//Longer reach, gives you a short stun.
+
 	damtype = RED_DAMAGE
 	attack_verb_continuous = list("pierces", "jabs")
 	default_attack_verbs = list("pierce", "jab")
@@ -1697,6 +1720,7 @@
 	force_cap = 48 //double base damage
 	force_per_tile = 3 //if I can read, this means you need to cross 8 tiles for max damage
 	pierce_force_cost = 12
+	stuntime = 5	//Longer reach, gives you a short stun.
 
 /obj/item/ego_weapon/warring
 	name = "warring"
@@ -1914,7 +1938,7 @@
 			if(L==user)
 				continue
 			L.adjustSanityLoss(-heal_amount)
-			new /obj/effect/temp_visual/healing(get_turf(L))
+			L.HealingEffect("healing")
 
 /obj/item/ego_weapon/blind_obsession
 	name = "blind obsession"
@@ -2051,7 +2075,8 @@
 	special = "This weapon has a combo system ending with a dive attack. To turn off this combo system, use in hand. \
 			This weapon has a fast attack speed"
 	icon_state = "abyssal_route"
-	force = 16
+	force = 10
+	modified_attack_speed = 0.4
 	damtype = BLACK_DAMAGE
 	swingstyle = WEAPONSWING_LARGESWEEP
 	attack_verb_continuous = list("stabs", "attacks", "slashes")
@@ -2080,17 +2105,16 @@
 /obj/item/ego_weapon/abyssal_route/attack(mob/living/M, mob/living/user)
 	if(!CanUseEgo(user)|| !can_attack)
 		return
-	if(combo_on)
-		if(world.time > combo_time || !combo_on)	//or you can turn if off I guess
-			combo = 0
-		combo_time = world.time + combo_wait
-		if(combo == 4)
-			combo = 0
-			user.changeNext_move(CLICK_CD_MELEE * 2)
-			force *= 2	// Should actually keep up with normal damage.
-			playsound(src, 'sound/weapons/fwoosh.ogg', 300, FALSE, 9)
-		else
-			user.changeNext_move(CLICK_CD_MELEE * 0.4)
+	if(world.time > combo_time || !combo_on)	//or you can turn if off I guess
+		combo = 0
+	combo_time = world.time + combo_wait
+	if(combo == 4)
+		combo = 0
+		user.changeNext_move(CLICK_CD_MELEE * 2)
+		force *= 2	// Should actually keep up with normal damage.
+		playsound(src, 'sound/weapons/fwoosh.ogg', 300, FALSE, 9)
+	else
+		user.changeNext_move(CLICK_CD_MELEE * 0.4)
 	..()
 	combo += 1
 	force = initial(force)
@@ -2104,9 +2128,12 @@
 		return
 	..()
 	if(combo == 4)
+		user.Immobilize(1.1 SECONDS)
+		ADD_TRAIT(src, TRAIT_NODROP, STICKY_NODROP)
 		can_attack = FALSE
 		sleep(0.5 SECONDS)
 		if(QDELETED(user))
+			REMOVE_TRAIT(src, TRAIT_NODROP, STICKY_NODROP)
 			return
 		playsound(get_turf(src), 'sound/abnormalities/piscinemermaid/waterjump.ogg', 20, 0, 3)
 		animate(user, alpha = 1,pixel_x = 0, pixel_z = -16, time = 0.1 SECONDS)
@@ -2118,11 +2145,13 @@
 		else if(QDELETED(A) || user.z != A.z)
 			animate(user, alpha = 255,pixel_x = 0, pixel_z = 16, time = 0.1 SECONDS)
 			user.pixel_z = 0
+			REMOVE_TRAIT(src, TRAIT_NODROP, STICKY_NODROP)
 			return
 		for(var/i in 2 to get_dist(user, A))
 			step_towards(user,A)
 		if((get_dist(user, A) < 2))
 			DiveAttack(A,user)
+		REMOVE_TRAIT(src, TRAIT_NODROP, STICKY_NODROP)
 		playsound(get_turf(src), 'sound/abnormalities/bloodbath/Bloodbath_EyeOn.ogg', 20, 0, 3)
 		to_chat(user, span_warning("You dive towards [A]!"))
 		animate(user, alpha = 255,pixel_x = 0, pixel_z = 16, time = 0.1 SECONDS)
@@ -2138,7 +2167,7 @@
 	for(var/mob/living/L in range(1, user))
 		if(L.z != user.z) // Not on our level
 			continue
-		var/aoe = 20
+		var/aoe = 28
 		var/userjust = (get_modified_attribute_level(user, JUSTICE_ATTRIBUTE))
 		var/justicemod = 1 + userjust/100
 		aoe*=justicemod
@@ -2454,3 +2483,27 @@
 
 /obj/item/ego_weapon/contempt/get_clamped_volume()
 	return 25
+
+/obj/item/ego_weapon/ardor_star
+	name = "ardor blossom star"
+	desc = "Though I can't guide you... I can offer a warm embrace."
+	icon_state = "ardor_star"
+	inhand_icon_state = "ardor_star"
+	special = "This weapon deal additional fire damage."
+	force = 20
+	attack_speed = 1.8
+	attack_verb_continuous = list("bashes", "crushes")
+	attack_verb_simple = list("bash", "crush")
+	attribute_requirements = list(
+							FORTITUDE_ATTRIBUTE = 80
+							)
+
+/obj/item/ego_weapon/ardor_star/attack(mob/living/target, mob/living/user)
+	..()
+	if(!CanUseEgo(user))
+		return
+	var/userjust = (get_modified_attribute_level(user, JUSTICE_ATTRIBUTE))
+	var/justicemod = 1 + userjust/100
+	var/damage = force * justicemod * force_multiplier * 0.5
+	target.apply_damage(damage, FIRE, null, target.run_armor_check(null, FIRE), spread_damage = TRUE)
+	target.apply_lc_burn(3)

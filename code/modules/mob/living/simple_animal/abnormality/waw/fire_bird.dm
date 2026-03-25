@@ -22,7 +22,8 @@
 		ABNORMALITY_WORK_ATTACHMENT = list(45, 45, 40, 40, 50),
 		ABNORMALITY_WORK_REPRESSION = list(45, 45, 40, 40, 50),
 	)
-	work_damage_amount = 7
+	work_damage_upper = 4
+	work_damage_lower = 3
 	work_damage_type = RED_DAMAGE
 	chem_type = /datum/reagent/abnormality/sin/lust
 	good_hater = TRUE
@@ -33,7 +34,7 @@
 	light_color = COLOR_LIGHT_ORANGE
 	light_range = 0
 	light_power = 0
-	loot = list(/obj/item/ego_weapon/ranged/feather)
+	loot = list(/obj/item/ego_weapon/feather)
 	ego_list = list(/datum/ego_datum/armor/feather)
 	gift_type = /datum/ego_gifts/feather
 	abnormality_origin = ABNORMALITY_ORIGIN_LOBOTOMY
@@ -92,17 +93,20 @@
 	. = ..()
 	switch(datum_reference?.qliphoth_meter)
 		if(1)
-			work_damage_amount = 11
+			work_damage_upper = 8
+			work_damage_lower = 6
 			light_range = 10
 			light_power = 20
 			update_light()
 		if(2)
-			work_damage_amount = 9
+			work_damage_upper = 6
+			work_damage_lower = 4
 			light_range = 2
 			light_power = 10
 			update_light()
 		else
-			work_damage_amount = 7
+			work_damage_upper = 4
+			work_damage_lower = 3
 			light_range = 0
 			light_power = 0
 			update_light()
@@ -122,7 +126,7 @@
 //Breach
 /mob/living/simple_animal/hostile/abnormality/fire_bird/BreachEffect(mob/living/carbon/human/user, breach_type)
 	. = ..()
-	loot = list(/obj/item/ego_weapon/ranged/feather)
+	loot = list(/obj/item/ego_weapon/feather)
 	icon_state = icon_living
 	light_range = 20
 	light_power = 20
@@ -274,7 +278,7 @@
 	name = "Burnt Eyes"
 	desc = "The Firebird has burnt your eyes and made it harder to work!"
 	icon = 'ModularTegustation/Teguicons/status_sprites.dmi'
-	icon_state = "bg_template"
+	icon_state = "burnt_eyes"
 
 /datum/status_effect/blinded/on_apply()
 	. = ..()

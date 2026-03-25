@@ -116,10 +116,14 @@
 	var/radius = 1
 	///This weighted list acts as the loot table for the spawner
 	var/list/mobspawn_table
+	var/enabled = TRUE
 
 
 /obj/effect/spawner/mobspawner/Initialize()
 	..()
+	if(!enabled)
+		return INITIALIZE_HINT_QDEL
+
 	if(!length(mobspawn_table))
 		return INITIALIZE_HINT_QDEL
 
@@ -219,18 +223,18 @@
 /obj/effect/spawner/mobspawner/shrimp
 	name = "shrimp squad spawn"
 	max_spawns = 5
-	mobspawn_table = list(/mob/living/simple_animal/hostile/shrimp = 4,
-					/mob/living/simple_animal/hostile/shrimp_soldier = 1)
+	mobspawn_table = list(/mob/living/simple_animal/hostile/aminion/shrimp = 4,
+					/mob/living/simple_animal/hostile/aminion/shrimp_soldier = 1)
 
 /obj/effect/spawner/mobspawner/shrimp_melee
 	name = "fishin shrimp squad spawn"
 	max_spawns = 5
-	mobspawn_table = list(/mob/living/simple_animal/hostile/shrimp = 1)
+	mobspawn_table = list(/mob/living/simple_animal/hostile/aminion/shrimp = 1)
 
 /obj/effect/spawner/mobspawner/shrimp_ranged
 	name = "shrimp soldier squad spawn"
 	max_spawns = 5
-	mobspawn_table = list(/mob/living/simple_animal/hostile/shrimp_soldier = 1)
+	mobspawn_table = list(/mob/living/simple_animal/hostile/aminion/shrimp_soldier = 1)
 
 	//Backstreet Humanoids
 /obj/effect/spawner/mobspawner/rat

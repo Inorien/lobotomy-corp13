@@ -22,14 +22,14 @@
 		return
 
 	var/mob/living/carbon/human/H = affected_mob
-	H.apply_damage(stage, RED_DAMAGE, null, H.run_armor_check(null, RED_DAMAGE), spread_damage = TRUE)
+	H.apply_damage(round(stage/2), RED_DAMAGE, null, H.run_armor_check(null, RED_DAMAGE), spread_damage = TRUE)
 
 	if(H.health <= 0)
 		var/turf/T = get_turf(H)
 		H.visible_message("<span class='danger'>[H] explodes in a shower of gore, as a giant bee appears out of [H.p_them()]!</span>")
 		H.emote("scream")
 		H.gib()
-		new /mob/living/simple_animal/hostile/worker_bee(T)
+		new /mob/living/simple_animal/hostile/aminion/worker_bee(T)
 		return
 
 	if((stage >= max_stages) && (H.health >= (H.maxHealth * 0.75)) && prob(H.health * 0.25))

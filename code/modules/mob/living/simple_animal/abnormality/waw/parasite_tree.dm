@@ -25,9 +25,11 @@
 		ABNORMALITY_WORK_ATTACHMENT = list(50, 50, 50, 50, 55),
 		ABNORMALITY_WORK_REPRESSION = 20,
 	)
-	work_damage_amount = 7
+	work_damage_upper = 6
+	work_damage_lower = 5
 	work_damage_type = WHITE_DAMAGE
 	chem_type = /datum/reagent/abnormality/sin/sloth
+	max_boxes = 24
 
 	ego_list = list(
 		/datum/ego_datum/weapon/hypocrisy,
@@ -101,6 +103,7 @@
 		cut_overlays()
 		var/mutable_appearance/colored_overlay = mutable_appearance(icon, "parasitetreeeye", layer + 0.1)
 		add_overlay(colored_overlay)
+		icon_state = "parasitetreeshine_purple"
 		for(var/datum/status_effect/display/parasite_tree_blessing/P in blessed)
 			P.facadeFalls()
 	else
@@ -125,6 +128,7 @@
 	add_overlay(colored_overlay)
 
 /mob/living/simple_animal/hostile/abnormality/parasite_tree/proc/resetQliphoth()
+	icon_state = "parasitetreeshine"
 	datum_reference.qliphoth_change(6)
 
 /mob/living/simple_animal/hostile/abnormality/parasite_tree/proc/endBreach()
@@ -160,14 +164,14 @@
 				new /obj/structure/liars_leaf(pick(possibleleafturf))
 
 	//SAPLING MINION
-/mob/living/simple_animal/hostile/parasite_tree_sapling
+/mob/living/simple_animal/hostile/aminion/parasite_tree_sapling
 	name = "toxic sapling"
 	desc = "A humanoid tree, it spews thick noxious gas from its agonized face."
 	icon = 'ModularTegustation/Teguicons/32x48.dmi'
 	icon_state = "sapling"
 	icon_living = "sapling"
-	maxHealth = 200
-	health = 200
+	maxHealth = 400
+	health = 400
 	can_patrol = FALSE
 	wander = 0
 	damage_coeff = list(RED_DAMAGE = 1.2, WHITE_DAMAGE = 0.6, BLACK_DAMAGE = 0.8, PALE_DAMAGE = 0.8)
@@ -180,9 +184,11 @@
 	death_sound = 'sound/creatures/venus_trap_death.ogg'
 	attacked_sound = 'sound/creatures/venus_trap_hurt.ogg'
 	projectilesound = 'sound/machines/clockcult/steam_whoosh.ogg'
+	threat_level = HE_LEVEL
+	score_divider = 8
 	var/mob/living/simple_animal/hostile/abnormality/parasite_tree/connected_abno
 
-/mob/living/simple_animal/hostile/parasite_tree_sapling/Initialize()
+/mob/living/simple_animal/hostile/aminion/parasite_tree_sapling/Initialize()
 	. = ..()
 	icon_living = "sapling[pick(1,2)]"
 	icon_state = icon_living
@@ -190,7 +196,7 @@
 	if(connected_abno)
 		connected_abno.minions += src
 
-/mob/living/simple_animal/hostile/parasite_tree_sapling/death()
+/mob/living/simple_animal/hostile/aminion/parasite_tree_sapling/death()
 	if(connected_abno)
 		connected_abno.minions -= src
 		connected_abno.endBreach()
@@ -198,7 +204,7 @@
 		AM.forceMove(get_turf(src))
 	..()
 
-/mob/living/simple_animal/hostile/parasite_tree_sapling/CanAttack(mob/living/carbon/human/the_target) //Your target has to be human and not have the tree curse.
+/mob/living/simple_animal/hostile/aminion/parasite_tree_sapling/CanAttack(mob/living/carbon/human/the_target) //Your target has to be human and not have the tree curse.
 	if(isturf(the_target) || !the_target || the_target.type == /atom/movable/lighting_object) // bail out on invalids
 		return FALSE
 
@@ -214,15 +220,15 @@
 		return TRUE
 	return FALSE
 
-/mob/living/simple_animal/hostile/parasite_tree_sapling/Move()
+/mob/living/simple_animal/hostile/aminion/parasite_tree_sapling/Move()
 	return FALSE
 
-/mob/living/simple_animal/hostile/parasite_tree_sapling/AttackingTarget(atom/attacked_target)
+/mob/living/simple_animal/hostile/aminion/parasite_tree_sapling/AttackingTarget(atom/attacked_target)
 	if(!target)
 		GiveTarget(attacked_target)
 	return OpenFire()
 
-/mob/living/simple_animal/hostile/parasite_tree_sapling/OpenFire()
+/mob/living/simple_animal/hostile/aminion/parasite_tree_sapling/OpenFire()
 	if(ranged_cooldown > world.time)
 		return FALSE
 	ranged_cooldown = world.time + ranged_cooldown_time
@@ -361,7 +367,7 @@
 		connected_abno.endBreach()
 		return ..()
 	if(status_holder.sanity_lost && status_holder.stat != DEAD)
-		var/mob/living/simple_animal/hostile/parasite_tree_sapling/new_mob = new(owner.loc)
+		var/mob/living/simple_animal/hostile/aminion/parasite_tree_sapling/new_mob = new(owner.loc)
 		nested_items(new_mob, status_holder.get_item_by_slot(ITEM_SLOT_SUITSTORE))
 		nested_items(new_mob, status_holder.get_item_by_slot(ITEM_SLOT_BELT))
 		nested_items(new_mob, status_holder.get_item_by_slot(ITEM_SLOT_BACK))

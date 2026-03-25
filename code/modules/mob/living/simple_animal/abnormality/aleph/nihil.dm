@@ -9,8 +9,8 @@
 	portrait = "nihil"
 	pixel_x = -16
 	base_pixel_x = -16
-	maxHealth = 15000
-	health = 15000
+	maxHealth = 10000
+	health = 10000
 	move_to_delay = 4
 	threat_level = ALEPH_LEVEL
 	work_chances = list(
@@ -20,11 +20,13 @@
 		ABNORMALITY_WORK_REPRESSION = list(0, 0, 30, 35, 45),
 	)
 	damage_coeff = list(RED_DAMAGE = 1, WHITE_DAMAGE = 0.3, BLACK_DAMAGE = 0.3, PALE_DAMAGE = 0.5) //change on phase
-	melee_damage_lower = 40
-	melee_damage_upper = 55
+	melee_damage_lower = 20
+	melee_damage_upper = 30
 	melee_damage_type = BLACK_DAMAGE
 	stat_attack = HARD_CRIT
-	work_damage_amount = 20
+	work_damage_upper = 10
+	work_damage_lower = 7
+	max_boxes = 35
 	work_damage_type = WHITE_DAMAGE
 	chem_type = /datum/reagent/abnormality/sin/pride
 	attack_verb_continuous = "claws"
@@ -50,7 +52,7 @@
 	var/icon_inverted
 	var/teleport_cooldown
 	var/teleport_cooldown_time = 60 SECONDS
-	var/explode_damage = 120
+	var/explode_damage = 80
 	//Phases
 	var/current_phase
 	var/death_ready = TRUE
@@ -58,7 +60,7 @@
 	//Attacks
 	var/nuke_cooldown
 	var/nuke_cooldown_time = 5 MINUTES //Once per phase goes off every 5 minutes otherwise
-	var/nuke_damage = 500
+	var/nuke_damage = 300
 	var/busy_attacking = FALSE //Prevents can_act from being set to true while performing a forced action
 
 	ego_list = list(
@@ -456,6 +458,7 @@
 	if(girlpower >= 4) //Bonus doubled reward if all 4 of the girls were present
 		for(var/path in subtypesof(/obj/item/nihil))
 			new path(get_turf(src))
+	SSticker.superbosses |= initial(name)
 	SSlobotomy_events.PruneList(event_type = 3) //End the event TODO: Visuals and stuff I guess?
 	..()
 
@@ -501,10 +504,10 @@
 	death_ready = FALSE
 	can_act = FALSE
 	var/list/potential_spawns
-	var/mob/living/simple_animal/nihil_portal/portal
+	var/mob/living/simple_animal/hostile/aminion/nihil_portal/portal
 	for(var/turf/T in GLOB.department_centers)
 		if(istype(get_area(T),/area/department_main/command))
-			for(var/mob/living/simple_animal/forest_portal/FP in T.contents) // Prevents breaching on top of apocalypse bird
+			for(var/mob/living/simple_animal/hostile/aminion/forest_portal/FP in T.contents) // Prevents breaching on top of apocalypse bird
 				potential_spawns = GLOB.department_centers.Copy()
 				potential_spawns -= T
 				continue
@@ -517,7 +520,7 @@
 	forceMove(portal)
 
 // Portal/Event code
-/mob/living/simple_animal/nihil_portal
+/mob/living/simple_animal/hostile/aminion/nihil_portal
 	name = "Portal to the Void"
 	desc = "A portal leading an evil villain to this world, it doesn't seem to be open yet..."
 	icon = 'icons/effects/64x64.dmi'
@@ -526,13 +529,15 @@
 	base_pixel_x = -16
 	layer = LARGE_MOB_LAYER
 	faction = list("Nihil", "hostile")
-	maxHealth = 30000
-	health = 30000
+	maxHealth = 15000
+	health = 15000
 	damage_coeff = list(RED_DAMAGE = 0, WHITE_DAMAGE = 0, BLACK_DAMAGE = 0, PALE_DAMAGE = 0)
 	move_resist = MOVE_FORCE_STRONG
 	pull_force = MOVE_FORCE_STRONG
 	mob_size = MOB_SIZE_HUGE
 	del_on_death = TRUE
+	threat_level = ALEPH_LEVEL
+	can_affect_emergency = FALSE
 	var/list/portal_types = list(
 		/obj/effect/magical_girl_portal/heart,
 		/obj/effect/magical_girl_portal/spade,
@@ -541,13 +546,13 @@
 	)
 	var/list/active_portals = list()
 
-/mob/living/simple_animal/nihil_portal/CanAttack(atom/the_target)
+/mob/living/simple_animal/hostile/aminion/nihil_portal/CanAttack(atom/the_target)
 	return FALSE
 
-/mob/living/simple_animal/nihil_portal/Move()
+/mob/living/simple_animal/hostile/aminion/nihil_portal/Move()
 	return FALSE
 
-/mob/living/simple_animal/nihil_portal/Initialize()
+/mob/living/simple_animal/hostile/aminion/nihil_portal/Initialize()
 	. = ..()
 	SSlobotomy_events.AddNihilMobs()
 	for(var/mob/M in GLOB.player_list) //vfx
@@ -563,7 +568,7 @@
 	addtimer(CALLBACK(src, PROC_REF(SpawnPortals)), 1 SECONDS)
 	addtimer(CALLBACK(src, PROC_REF(StartEvent)), 30 SECONDS)
 
-/mob/living/simple_animal/nihil_portal/proc/SpawnPortals()
+/mob/living/simple_animal/hostile/aminion/nihil_portal/proc/SpawnPortals()
 	set waitfor = FALSE
 	SSlobotomy_events.AddNihilMobs() //Assuming a magical girl is added to the facility now, this is the last chance they get to count for the event
 	for(var/dir in GLOB.diagonals) //Spawn the portals
@@ -575,11 +580,11 @@
 		active_portals += theportal
 		sleep(10)
 
-/mob/living/simple_animal/nihil_portal/proc/DeletePortals()
+/mob/living/simple_animal/hostile/aminion/nihil_portal/proc/DeletePortals()
 	for(var/obj/effect/magical_girl_portal/theportal in range(2, src))
 		qdel(theportal)
 
-/mob/living/simple_animal/nihil_portal/proc/StartEvent()
+/mob/living/simple_animal/hostile/aminion/nihil_portal/proc/StartEvent()
 	DeletePortals()
 	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(show_global_blurb), 5 SECONDS, "Life, Dreams, Hope, where do they come from? And where will they go?", 25))
 	for(var/mob/living/simple_animal/hostile/abnormality/nihil/jester in contents)
@@ -594,7 +599,7 @@
 		A.toggle_ai(AI_ON)
 	qdel(src)
 
-/mob/living/simple_animal/nihil_portal/death(gibbed)
+/mob/living/simple_animal/hostile/aminion/nihil_portal/death(gibbed)
 	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(show_global_blurb), 5 SECONDS, "The crisis has been averted.", 25))
 	DeletePortals()
 	for(var/mob/living/simple_animal/hostile/abnormality/A in GLOB.abnormality_mob_list) //delete the magical girls cause they won
@@ -623,7 +628,7 @@
 	set waitfor = FALSE
 	var/turf/landing_turf
 	var/turf/target_turf
-	for(var/mob/living/simple_animal/nihil_portal/summonpoint in range(2,src))
+	for(var/mob/living/simple_animal/hostile/aminion/nihil_portal/summonpoint in range(2,src))
 		target_turf = get_turf(summonpoint)
 		landing_turf = get_step_towards(src, summonpoint)
 

@@ -26,7 +26,8 @@ GLOBAL_LIST_EMPTY(ribbon_list)
 						ABNORMALITY_WORK_ATTACHMENT = list(80, 50, 50, 40, 30),
 						ABNORMALITY_WORK_REPRESSION = list(50, 60, 50, 55, 60)
 						)
-	work_damage_amount = 5
+	work_damage_upper = 6
+	work_damage_lower = 4
 	work_damage_type = WHITE_DAMAGE
 	del_on_death = FALSE
 	death_message = "falls, leaving tattered ribbons."
@@ -40,6 +41,17 @@ GLOBAL_LIST_EMPTY(ribbon_list)
 		)
 	gift_type =  /datum/ego_gifts/roseate_desire
 	abnormality_origin = ABNORMALITY_ORIGIN_LIMBUS
+
+	observation_prompt = "Strips of pink ribbons float this way. <br>\
+		A voice travels between the fluttering ribbons. <br>\
+		\"What is your desire?\" <br>\"Put me on.\" <br>\
+		\"I'll carry you wherever you wish to go.\" <br>\
+		The suggestions are incredibly suspicious, but for some reason, you are struggling to do decide what do do. <br>What do you say?"
+	observation_choices = list(
+		"Put on the ribbons" = list(FALSE, "Oh, yeah... This feels good. <br>The ribbons magically turn into shiny pairs of shoes.  <br>Now you can go wherever you want. <br>Probably."),
+		"Refuse" = list(TRUE, "\"Snap out of it! It's all a lie!\" <br>A haggard employee manages to stop you at the last second. <br>Thanks to that warning, you avoided the desire-laden ribbons."),
+	)
+
 	ranged = TRUE
 	environment_smash = FALSE//this stops it from smashing its own ribbons when breaching independently
 	minimum_distance = 1
@@ -48,7 +60,7 @@ GLOBAL_LIST_EMPTY(ribbon_list)
 	var/mob/living/possessee
 	var/list/dense_ribbon_list = list()
 	var/static/list/ribbon_list = list()
-	var/mob/living/simple_animal/hostile/grown_strong/special_possessee
+	var/mob/living/simple_animal/hostile/aminion/grown_strong/special_possessee
 
 //*** Simple Mob Procs ***//
 /mob/living/simple_animal/hostile/abnormality/pink_shoes/Life()
@@ -287,7 +299,7 @@ GLOBAL_LIST_EMPTY(ribbon_list)
 
 /mob/living/simple_animal/hostile/abnormality/pink_shoes/proc/Convert(mob/living/target)
 	playsound(src, 'sound/abnormalities/pinkshoes/Pinkshoes_Binding.ogg', 100, 1)
-	var/mob/living/simple_animal/hostile/pink_zombie/Z = new(get_turf(target), target)
+	var/mob/living/simple_animal/hostile/aminion/pink_zombie/Z = new(get_turf(target), target)
 	Z.name = target.name
 
 //this is essentially GetStaticIcon() with a different icon.
@@ -399,7 +411,7 @@ GLOBAL_LIST_EMPTY(ribbon_list)
 
 /datum/status_effect/stacking/urge/proc/Convert(mob/living/target)//Turns human corpses into pink shoes enchantees when dead with urge
 	playsound(src, 'sound/abnormalities/pinkshoes/Pinkshoes_Binding.ogg', 100, 1)
-	var/mob/living/simple_animal/hostile/pink_zombie/Z = new(get_turf(target), target)
+	var/mob/living/simple_animal/hostile/aminion/pink_zombie/Z = new(get_turf(target), target)
 	Z.name = target.name
 
 /datum/status_effect/panicked_type/desirous
@@ -491,7 +503,7 @@ GLOBAL_LIST_EMPTY(ribbon_list)
 	controller.blackboard[BB_INSANE_CURRENT_ATTACK_TARGET] = null
 
 //***Simple Mob Definition***//
-/mob/living/simple_animal/hostile/pink_zombie
+/mob/living/simple_animal/hostile/aminion/pink_zombie
 	name = "Pink Shoes Enchantee"
 	desc = "A humanoid covered in pink ribbons that reeks of decay."
 	icon = 'ModularTegustation/Teguicons/32x32.dmi'
@@ -514,9 +526,11 @@ GLOBAL_LIST_EMPTY(ribbon_list)
 	stat_attack = HARD_CRIT
 	del_on_death = TRUE
 	density = TRUE
+	threat_level = TETH_LEVEL
+	score_divider = 2
 	var/mob/living/possessed_mob
 
-/mob/living/simple_animal/hostile/pink_zombie/Initialize(loc, mob/living/H)
+/mob/living/simple_animal/hostile/aminion/pink_zombie/Initialize(loc, mob/living/H)
 	..()
 	if(!IsCombatMap())
 		icon_state = "pinkshoes_zombie2"
@@ -532,14 +546,14 @@ GLOBAL_LIST_EMPTY(ribbon_list)
 	base_pixel_y = rand(-6,6)
 	pixel_y = base_pixel_y
 
-/mob/living/simple_animal/hostile/pink_zombie/Life()
+/mob/living/simple_animal/hostile/aminion/pink_zombie/Life()
 	. = ..()
 	if(!.) // Dead
 		return FALSE
 	if(status_flags & GODMODE)
 		return FALSE
 
-/mob/living/simple_animal/hostile/pink_zombie/death(gibbed)
+/mob/living/simple_animal/hostile/aminion/pink_zombie/death(gibbed)
 	for(var/obj/O in src)
 		O.forceMove(loc)
 	if(possessed_mob)
@@ -610,7 +624,7 @@ GLOBAL_LIST_EMPTY(ribbon_list)
 			/obj/effect,
 			/mob/dead,
 			/mob/living/simple_animal/hostile/abnormality/pink_shoes,
-			/mob/living/simple_animal/hostile/pink_zombie,
+			/mob/living/simple_animal/hostile/aminion/pink_zombie,
 			))
 
 /obj/structure/spreading/pink_ribbon/attacked_by(obj/item/I, mob/living/user)

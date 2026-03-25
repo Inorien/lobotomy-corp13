@@ -15,7 +15,8 @@
 		ABNORMALITY_WORK_ATTACHMENT = 45,
 		ABNORMALITY_WORK_REPRESSION = 45,
 	)
-	work_damage_amount = 5
+	work_damage_upper = 3
+	work_damage_lower = 2
 	work_damage_type = BLACK_DAMAGE
 	chem_type = /datum/reagent/abnormality/sin/gloom
 	max_boxes = 16
@@ -66,11 +67,6 @@
 /mob/living/simple_animal/hostile/abnormality/galaxy_child/PostSpawn()
 	. = ..()
 	datum_reference.qliphoth_meter = 1
-	if((SSmaptype.maptype == "limbus_labs"))
-		var/datum/action/cooldown/friend_gift/gift = new()
-		gift.Grant(src)
-		var/datum/action/cooldown/galaxygiftbreak/antigift = new()
-		antigift.Grant(src)
 
 /mob/living/simple_animal/hostile/abnormality/galaxy_child/Destroy(force)
 	break_gifts()

@@ -39,6 +39,7 @@
 		"After an employee died within the facility, the Qliphoth Counter decreased.",
 		"When the work result was Bad, the Qliphoth Counter decreased.",
 		"When the work result was Good, the Qliphoth Counter increased.",
+		"Big Bird breached its Containment Unit regardless of its Qliphoth Counter when the emergency situation in the facility reached the 2nd Trumpet.",
 		"Employees who are near Big Bird may become enchanted whenever Big Bird swings its lamp.")
 	abno_breach_damage_type = "Instant Death"
 	abno_breach_damage_count = "N/A"
@@ -65,7 +66,7 @@
 	abno_info = list(
 		"When the work result was Bad, the Qliphoth Counter lowered.",
 		"When 3 Qliphoth Meltdowns occurred in the facility without the death of an employee, the Qliphoth Counter lowered.",
-		"After 4 employees died within the facility while the Qliphoth Counter was at its maximum, The Queen of Hatred voluntarily helped with Abnormality suppression. However, if 50% of our employees die while help is provided, the state of the Abnormality will change and will need to be suppressed immediately.",
+		"When the facility reached Trumpet Level 2, The Queen of Hatred voluntarily helped with Abnormality suppression. However, if 50% of our employees die while help is provided, the state of the Abnormality will change and will need to be suppressed immediately.",
 		"The Queen of Hatred’s status changed when her Qliphoth Counter became 1. The work success rate was low when in said status. This status has been designated as \"Hysteric\" due to her anxiety and compulsive disorders.",
 		"When she was Hysteric, generating 16+ PE-Boxes raised her Qliphoth Counter.",
 		"When she was Hysteric, generating 15 or fewer PE-Boxes lowered her Qliphoth Counter.")
@@ -295,8 +296,8 @@
 		"An employee who constantly worked with The Little Prince, showed signs of acute pain in the Containment Unit. After that, tissues similar to The Little Prince emerged in their body, and NAME began to transform into The Little Prince-1.",
 		"The Little Prince attracted an employee to its containment unit when its Qliphoth Counter hit 0. When the lured employee entered the Containment Unit, the same phenomenon as described previously occurred.",
 		"When suppressing The Little Prince-1, please pay attention to the spores that are released from its body upon death. Those spores will cause sustained mental damage, and employees who panic from the spores may attempt to enter The Little Prince’s Containment Unit, which should be immediately stopped.")
-	abno_can_breach = TRUE // Info for the minion
-	abno_breach_damage_type = "Black"
+	abno_can_breach = TRUE // Info for the minion + fungi
+	abno_breach_damage_type = "Black/White"
 	abno_breach_damage_count = "High"
 
 //Flesh Idol
@@ -404,7 +405,7 @@
 	abno_info = list(
 		"The first Employee that gets a Good work result will gain a mark from now on will be called the “Sculptor”" ,
 		"The “Sculptor” will have a higher work success chance with Pygmalion and will have a higher chance of getting the E.G.O gift" ,
-		"Pygmalion breaches when the “Sculptor” has 50% or less sanity or health." ,
+		"Pygmalion breaches when the “Sculptor” has 50% or less sanity or health or when the facility reached the 1st Trumpet." ,
 		"When Pygmalion breaches, They will teleport to the “Sculptor” and attack any abnormality in their way and any abnormality near the “Sculptor.”" ,
 		"The “Sculptor” will have their maximum sanity reduced while Pygmalion is breaching." ,
 		"If the “Sculptor” goes insane or dies, Pygmalion will become enraged and start attacking everyone near them.")
@@ -567,4 +568,19 @@
 
 	)
 	abno_breach_damage_type = "Pale"
+	abno_breach_damage_count = "Very High"
+
+// Ardor Blossom Moth
+/obj/item/paper/fluff/info/waw/ardor_blossom_moth
+	abno_type = /mob/living/simple_animal/hostile/abnormality/ardor_moth
+	abno_code = "T-02-182"
+	abno_info = list(
+		"When the work result was Bad, the Qliphoth Counter decreased by 2.",
+		"At regular intervals, the area in front of and inside of T-02-182's containment cell will be littered with embers.",
+		"When the embers landed an employee, the Qliphoth Counter lowered.",
+		"When an employee walked slowly through the embers, the chances of one landing on them would be significantly lowered.",
+		"When the work result was Normal, the Qliphoth Counter increased with a low probability.",
+		"When the work result was Good, the Qliphoth Counter increased with a high probability. Additionally, if embers were present, they would dissipate for some time.",
+	)
+	abno_breach_damage_type = "Fire/Red"
 	abno_breach_damage_count = "Very High"

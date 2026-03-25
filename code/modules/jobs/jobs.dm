@@ -114,10 +114,6 @@ GLOBAL_LIST_INIT(service_positions, list(
 GLOBAL_LIST_INIT(security_positions, list(
 	"Department Head",
 	"Department Captain",
-	"Training Officer",
-
-	"Disciplinary Officer",
-	"Combat Research Agent",
 
 	"Agent Captain",
 	"Agent Lieutenant",
@@ -149,6 +145,37 @@ GLOBAL_LIST_INIT(w_corp_positions, list(
 	"W-Corp L2 Type C Weapon Specialist",
 	"W-Corp L2 Type D Spear Agent",
 	"W-Corp L1 Cleanup Agent",
+))
+
+//Exists to check who can fight stuff
+GLOBAL_LIST_INIT(fighter_positions, list(
+	//K Corp
+	"Class 1",
+	"Class 3",
+
+	//L Corp
+	"Extraction Officer",
+	"Records Officer",
+	"Training Officer",
+	"Disciplinary Officer",
+	"Department Head",
+	"Department Captain",
+	"Agent Captain",
+	"Agent Lieutenant",
+	"Senior Agent",
+	"Agent",
+	"Agent Intern",
+
+	//R Corp
+	"SPC",
+	"SGT",
+
+	//W Corp
+	"L1",
+	"L2",
+
+	//Zwei
+	"Z6",
 ))
 
 GLOBAL_LIST_INIT(r_corp_positions, list(

@@ -15,7 +15,8 @@
 		ABNORMALITY_WORK_REPRESSION = 40,
 	)
 
-	work_damage_amount = 2
+	work_damage_upper = 2
+	work_damage_lower = 1
 	work_damage_type = RED_DAMAGE
 	chem_type = /datum/reagent/abnormality/sin/pride
 
@@ -161,7 +162,7 @@
 			chance *= 2
 			continue
 		chance = 20
-		if(role in list("Manager", "Extraction Officer", "Records Officer", "Sephirah"))
+		if(role in list("Manager","Training Officer","Disciplinary Officer", "Extraction Officer", "Records Officer", "Sephirah"))
 			weaken = TRUE
 		var/threat_type = pickweight(list(
 			/obj/item/mailpaper/trapped/fairies = 10,

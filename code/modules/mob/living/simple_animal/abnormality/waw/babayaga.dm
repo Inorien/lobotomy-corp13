@@ -27,7 +27,8 @@
 		ABNORMALITY_WORK_ATTACHMENT = 0,
 		ABNORMALITY_WORK_REPRESSION = list(0, 0, 40, 40, 40),
 	)
-	work_damage_amount = 7
+	work_damage_upper = 6
+	work_damage_lower = 4
 	work_damage_type = RED_DAMAGE
 	chem_type = /datum/reagent/abnormality/sin/gloom
 	ego_list = list(
@@ -177,12 +178,12 @@
 					A.death()
 		new /obj/effect/temp_visual/dir_setting/cult/phase
 		if(prob(30))
-			var/mob/living/simple_animal/hostile/yagaslave/Y = new(T)
+			var/mob/living/simple_animal/hostile/aminion/yagaslave/Y = new(T)
 			spawned_mobs+=Y
 	return
 
 // Misc Objects and effects
-/mob/living/simple_animal/hostile/yagaslave
+/mob/living/simple_animal/hostile/aminion/yagaslave
 	name = "frozen slave"
 	desc = "A humanoid figure encased in ice, the pickaxe they're holding looks sharp."
 	icon = 'ModularTegustation/Teguicons/tegumobs.dmi'
@@ -202,6 +203,8 @@
 	attack_verb_simple = "slash"
 	attack_sound = 'sound/abnormalities/babayaga/attack.ogg'
 	speak_emote = list("whispers")
+	threat_level = TETH_LEVEL
+	score_divider = 4
 
 /obj/effect/temp_visual/giantwarning
 	name = "giant warning"

@@ -18,8 +18,10 @@
 		ABNORMALITY_WORK_REPRESSION = list(0, 0, 0, 45, 50),
 	)
 	start_qliphoth = 1
-	work_damage_amount = 9
+	work_damage_upper = 7
+	work_damage_lower = 6
 	work_damage_type = PALE_DAMAGE
+	max_boxes = 33
 	chem_type = /datum/reagent/abnormality/sin/pride
 	pixel_x = -16
 	base_pixel_x = -16
@@ -33,6 +35,7 @@
 	)
 	gift_type = /datum/ego_gifts/blossoming
 	abnormality_origin = ABNORMALITY_ORIGIN_WONDERLAB
+	can_spawn = FALSE // Normally doesn't appear
 
 	observation_prompt = "This isn't worth being called a sacrifice, is it? <br>I've always wanted to be a hero, but... <br>Even when I'm ordered forth to die a worthless death... <br>\
 		I find myself laughable for deciding to do it still. <br>I joined this company to save people. <br>If I can save the lives of those I love, I have no regrets."

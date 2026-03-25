@@ -1052,71 +1052,46 @@
 //update_stamina() is move_to_delay = (initial(move_to_delay) + (staminaloss * 0.06))
 // 100 stamina damage equals 6 additional move_to_delay. So 167*0.06 = 10.02
 
-/datum/status_effect/rend_red
-	id = "rend red armor"
+/datum/status_effect/display/rend//find a better file to put these in
+	id = "rend_red"
 	status_type = STATUS_EFFECT_UNIQUE
+	display_name = "red"
 	duration = 60 //6 seconds
 	alert_type = null
+	var/modifier_path = /datum/dc_change/rend/red
 
-/datum/status_effect/rend_red/on_apply()
+/datum/status_effect/display/rend/on_apply()
 	. = ..()
-	if(!isanimal(owner))
+	if(!istype(owner, /mob/living/simple_animal))
 		qdel(src)
 		return
 	var/mob/living/simple_animal/M = owner
-	M.AddModifier(/datum/dc_change/rend/red)
+	M.AddModifier(modifier_path)
 //20% damage increase. Hitting any abnormality that has a negative value will cause this
 //to be a buff to their healing.
 
-/datum/status_effect/rend_red/on_remove()
-	. = ..()
-	if(isanimal(owner))
-		var/mob/living/simple_animal/M = owner
-		M.RemoveModifier(/datum/dc_change/rend/red)
-
-
-//White Damage Debuff
-/datum/status_effect/rend_white
-	id = "rend white armor"
-	status_type = STATUS_EFFECT_UNIQUE
-	duration = 50 //5 seconds since it's melee-ish
-	alert_type = null
-
-/datum/status_effect/rend_white/on_apply()
-	. = ..()
-	if(!isanimal(owner))
-		qdel(src)
-		return
+/datum/status_effect/display/rend/on_remove()
+	if(!istype(owner, /mob/living/simple_animal))
+		return ..()
 	var/mob/living/simple_animal/M = owner
-	M.AddModifier(/datum/dc_change/rend/white)
+	M.RemoveModifier(modifier_path)
+	..()
 
-/datum/status_effect/rend_white/on_remove()
-	. = ..()
-	if(isanimal(owner))
-		var/mob/living/simple_animal/M = owner
-		M.RemoveModifier(/datum/dc_change/rend/white)
+/datum/status_effect/display/rend/white
+	id = "rend_white"
+	display_name = "white"
+	modifier_path = /datum/dc_change/rend/white
 
-//Black Damage Debuff
+/datum/status_effect/display/rend/black
+	id = "rend_black"
+	display_name = "black"
+	modifier_path = /datum/dc_change/rend/black
 
-/datum/status_effect/rend_black
-	id = "rend black armor"
-	status_type = STATUS_EFFECT_UNIQUE
-	duration = 50 //5 seconds since it's melee-ish
-	alert_type = null
 
-/datum/status_effect/rend_black/on_apply()
-	. = ..()
-	if(!isanimal(owner))
-		qdel(src)
-		return
-	var/mob/living/simple_animal/M = owner
-	M.AddModifier(/datum/dc_change/rend/black)
-
-/datum/status_effect/rend_black/on_remove()
-	. = ..()
-	if(isanimal(owner))
-		var/mob/living/simple_animal/M = owner
-		M.RemoveModifier(/datum/dc_change/rend/black)
+/datum/status_effect/display/rend/black/weak//10% damage
+	id = "rend_black_weak"
+	display_name = "black"
+	modifier_path = /datum/dc_change/rend/black/weak
 
 #undef MOB_HALFSPEED
 
@@ -1181,7 +1156,10 @@
 	stacks -= 3
 
 /datum/status_effect/stacking/lc_burn/proc/DealDamage()
-	owner.apply_damage(max(1, stacks * 0.25), FIRE, null, owner.run_armor_check(null, FIRE))
+	var/mult = 0.25
+	if(!ishuman(owner))
+		mult = 1//Non human mobs take 1 damage per stack
+	owner.apply_damage(max(1, stacks * mult), FIRE, null, owner.run_armor_check(null, FIRE))
 
 //Update burn appearance
 /datum/status_effect/stacking/lc_burn/proc/Update_Burn_Overlay(mob/living/owner)
@@ -1248,11 +1226,11 @@
 		if(!B)
 			B = new /obj/effect/decal/cleanable/blood(get_turf(owner))
 			B.bloodiness = 100
+	var/damage_done = stacks*2
 	if(ishuman(owner))
-		owner.adjustBruteLoss(max(stacks * 0.125, 1))
-	else
-		owner.adjustBruteLoss(stacks*2) // x2 on non humans
-	new /obj/effect/temp_visual/damage_effect/bleed(get_turf(owner))
+		damage_done = max(stacks * 0.125, 1)
+	owner.adjustBruteLoss(damage_done) // x2 on non humans
+	owner.OtherDamageEffect(damage_done, "bleed")
 	stacks = round(stacks/2)
 	if(stacks == 0)
 		qdel(src)
@@ -1325,7 +1303,7 @@
 	icon = 'ModularTegustation/Teguicons/status_sprites.dmi'
 	icon_state = "pallid_noise"
 
-/datum/status_effect/stacking/pallid_noise/tick()//TODO:change this to golden apple's life tick for less lag
+/datum/status_effect/stacking/pallid_noise/tick()
 	if(!ishuman(owner))
 		owner.apply_damage(stacks, WHITE_DAMAGE, null, owner.run_armor_check(null, WHITE_DAMAGE))
 		return
@@ -1390,7 +1368,7 @@
 		qdel(src)
 
 /datum/status_effect/stacking/lc_tremor/proc/TremorBurst()
-	new /obj/effect/temp_visual/weapon_stun/tremorburst(get_turf(owner))
+	owner.HealingEffect("tremorburst")
 	playsound(owner, 'sound/effects/tremorburst.ogg', 50, FALSE)
 	if(ishuman(owner))
 		owner.Knockdown(stacks)
@@ -1404,12 +1382,12 @@
 	var/datum/status_effect/stacking/lc_tremor/T = src.has_status_effect(/datum/status_effect/stacking/lc_tremor)
 	if(!T)
 		src.apply_status_effect(/datum/status_effect/stacking/lc_tremor, stacks)
-		new /obj/effect/temp_visual/damage_effect/tremor(get_turf(src))
+		src.OtherDamageEffect(stacks, "tremor")
 		return
 
 	if(T.stacks < tremorburst)
 		T.add_stacks(stacks)
-		new /obj/effect/temp_visual/damage_effect/tremor(get_turf(src))
+		src.OtherDamageEffect(stacks, "tremor")
 		T.new_stack = TRUE
 		return
 	T.TremorBurst()

@@ -48,7 +48,7 @@
 	var/dynamic_fhair_suffix = ""//mask > head for facial hair
 
 	///These are armor values that protect the wearer, taken from the clothing's armor datum. List updates on examine because it's currently only used to print armor ratings to chat in Topic().
-	var/list/armor_list = list()
+	var/list/armor_list = alist()
 	///These are armor values that protect the clothing, taken from its armor datum. List updates on examine because it's currently only used to print armor ratings to chat in Topic().
 	var/list/durability_list = list()
 
@@ -336,13 +336,10 @@
 		white_armor = armor.getRating(mapping[WHITE_DAMAGE])
 		black_armor = armor.getRating(mapping[BLACK_DAMAGE])
 		pale_armor = armor.getRating(mapping[PALE_DAMAGE])
-	if(red_armor)
+	if(red_armor || white_armor || black_armor || pale_armor)
 		armor_list["RED"] = red_armor
-	if(white_armor)
 		armor_list["WHITE"] = white_armor
-	if(black_armor)
 		armor_list["BLACK"] = black_armor
-	if(pale_armor)
 		armor_list["PALE"] = pale_armor
 
 	if(LAZYLEN(durability_list))

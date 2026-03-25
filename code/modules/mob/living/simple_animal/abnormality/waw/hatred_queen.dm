@@ -13,6 +13,8 @@
 	portrait = "hatred_queen"
 	faction = list("neutral")
 	abnormality_origin = ABNORMALITY_ORIGIN_LOBOTOMY
+	can_affect_emergency = FALSE
+	trigger_lights = FALSE
 
 	ranged = TRUE
 	retreat_distance = 1
@@ -40,7 +42,8 @@
 		ABNORMALITY_WORK_ATTACHMENT = list(50, 50, 55, 55, 60),
 		ABNORMALITY_WORK_REPRESSION = list(20, 20, 20, 0, 0),
 	)
-	work_damage_amount = 5
+	work_damage_upper = 4
+	work_damage_lower = 3
 	work_damage_type = BLACK_DAMAGE
 	chem_type = /datum/reagent/abnormality/sin/lust
 
@@ -112,56 +115,7 @@
 		/datum/action/innate/abnormality_attack/qoh_beats,
 		/datum/action/innate/abnormality_attack/qoh_teleport,
 		/datum/action/innate/abnormality_attack/qoh_normal,
-		/datum/action/cooldown/toggle_hysteria,
 	)
-
-
-/datum/action/cooldown/toggle_hysteria
-	name = "Toggle Hysteria"
-	desc = "Toggle your Hysteria with your other forms. (Works only for Limbus Company Labratories)"
-	check_flags = AB_CHECK_CONSCIOUS
-	transparent_when_unavailable = TRUE
-	cooldown_time = HATRED_COOLDOWN
-
-
-/datum/action/cooldown/toggle_hysteria/Trigger()
-	if(!..())
-		return FALSE
-	if(!istype(owner, /mob/living/simple_animal/hostile/abnormality/hatred_queen))
-		return FALSE
-	if(!SSmaptype.maptype == "limbus_labs")
-		return FALSE
-	var/mob/living/simple_animal/hostile/abnormality/hatred_queen/hatred_queen = owner
-	StartCooldown()
-	hatred_queen.hysteria_change()
-
-/mob/living/simple_animal/hostile/abnormality/hatred_queen/proc/hysteria_change()
-	if(hysteric_ability == 0)
-		icon = 'ModularTegustation/Teguicons/32x32.dmi'
-		icon_state = "hatred_psycho"
-		threat_level = TETH_LEVEL
-		faction = "netrual"
-		if(HAS_TRAIT_FROM(src, TRAIT_MOVE_FLYING, ROUNDSTART_TRAIT))
-			REMOVE_TRAIT(src, TRAIT_MOVE_FLYING, ROUNDSTART_TRAIT)
-		if(!wand)
-			var/turf/wand_turf = get_ranged_target_turf(src, WEST, 1)
-			wand = new(wand_turf)
-		hysteric_ability = 1
-		return
-	if(hysteric_ability == 1)
-		var/hysteria_choice = alert(src, "Do you want to change into your friendly or hostile form?", "Choose Form", "Friendly", "Hostile")
-		if(hysteria_choice == "Friendly")
-			icon = 'ModularTegustation/Teguicons/32x32.dmi'
-			icon_state = "hatred"
-			friendly = TRUE
-			threat_level = TETH_LEVEL
-			faction = "neutral"
-			ADD_TRAIT(src, TRAIT_MOVE_FLYING, ROUNDSTART_TRAIT)
-		if(hysteria_choice == "Hostile")
-			addtimer(CALLBACK(src, PROC_REF(HostileTransform)), 10 SECONDS)
-		hysteric_ability = 0
-		return
-
 
 /datum/action/innate/abnormality_attack/qoh_beam
 	name = "Arcana Slave"
@@ -277,6 +231,7 @@
 
 /mob/living/simple_animal/hostile/abnormality/hatred_queen/Life()
 	. = ..()
+	emergency_check()
 	if(IsContained()) // Contained
 		if(datum_reference?.qliphoth_meter == 1)
 			addtimer(CALLBACK(src, PROC_REF(SpawnHeart)), rand(2,8))
@@ -318,13 +273,19 @@
 		return FALSE
 	death_counter += 1
 	//if BREACHED, check if death_counter over the death limit
-	if(!IsContained() && breach_max_death && (death_counter >= breach_max_death) && !SSmaptype.maptype == "limbus_labs")
+	if(!IsContained() && breach_max_death && (death_counter >= breach_max_death))
 		GoHysteric()
-	//if CONTAINED and lots of death before qliphoth triggers (TEMP)
-	if(IsContained() && (death_counter > 3)) // Omagah a lot of dead people!
-		BreachEffect() // We must help them!
-		datum_reference.qliphoth_meter = 0
 	return TRUE
+
+/mob/living/simple_animal/hostile/abnormality/hatred_queen/proc/emergency_check()
+	if(!IsContained() && friendly && (GLOB.emergency_level == TRUMPET_0) && !nihil_present)
+		death()
+	//if CONTAINED and shits going down
+	if(IsContained() && (datum_reference?.qliphoth_meter == 2) && (GLOB.emergency_level >= TRUMPET_2) && (datum_reference?.emergency_breach))
+		BreachEffect() // We must help them!
+		if(datum_reference)
+			datum_reference.emergency_breach = FALSE//She shouldn't be able to breach again passively until the next qliphoth event.
+			datum_reference.qliphoth_meter = 0
 
 /mob/living/simple_animal/hostile/abnormality/hatred_queen/proc/ArcanaBeats(target)
 	if(beats_cooldown > world.time)
@@ -458,12 +419,6 @@
 	beamloop.start()
 	var/beam_stage = 1
 	var/beam_damage_final = beam_damage
-	if(SSmaptype.maptype == "limbus_labs")
-		for(var/turf/TF in hit_line) //checks if that line has anything in the way, resets TT as the new beam end location
-			if(TF.density)
-				TT = TF
-				break
-		hit_line = getline(my_turf, TT) //old hit_line is discarded with hit_line which respects walls
 	if(friendly)
 		addtimer(CALLBACK(src, TYPE_PROC_REF(/atom/movable, say), "ARCANA SLAVE!"))
 		icon_state = "hatredbeats"
@@ -495,10 +450,6 @@
 			var/obj/effect/temp_visual/L = new /obj/effect/temp_visual/revenant(TF)
 			L.color = current_beam.visuals.color
 		for(var/turf/TF in hit_line)
-			if(SSmaptype.maptype == "limbus_labs")
-				if(!friendly)
-					for(var/obj/structure/obstacle in range(beam_stage-1, TF))
-						obstacle.take_damage(11, BLACK_DAMAGE)
 			for(var/mob/living/L in range(beam_stage-1, TF))
 				if(L.status_flags & GODMODE)
 					continue
@@ -538,8 +489,6 @@
 		icon_state = "hatred"
 
 /mob/living/simple_animal/hostile/abnormality/hatred_queen/proc/TryTeleport(forced = FALSE)
-	if(SSmaptype.maptype == "limbus_labs")
-		return FALSE
 	if(!forced)
 		if(teleport_cooldown > world.time)
 			return FALSE
@@ -614,7 +563,7 @@
 
 /mob/living/simple_animal/hostile/abnormality/hatred_queen/OnQliphothEvent()
 	if(!IsContained()) //Breached
-		return
+		return ..()
 	if(death_counter < 2)
 		counter_amount += 1
 		if(counter_amount >= 3)
@@ -634,12 +583,10 @@
 /mob/living/simple_animal/hostile/abnormality/hatred_queen/proc/GoCrazy()
 	icon_state = icon_crazy
 	chance_modifier = 0.8
-	work_damage_amount *= 2
 
 /mob/living/simple_animal/hostile/abnormality/hatred_queen/proc/GoNormal()
 	icon_state = icon_living
 	chance_modifier = 1
-	work_damage_amount = initial(work_damage_amount)
 
 /mob/living/simple_animal/hostile/abnormality/hatred_queen/proc/GoHysteric(retries = 0)
 	if(!friendly || !breach_max_death || nihil_present)
@@ -671,9 +618,10 @@
 	datum_reference.qliphoth_change(-1)
 	return
 
-/mob/living/simple_animal/hostile/abnormality/hatred_queen/proc/HostileTransform()
+/mob/living/simple_animal/hostile/abnormality/hatred_queen/proc/HostileTransform(contained = FALSE)
 	if(stat == DEAD)
 		return
+	HostileMode(!contained)
 	visible_message(span_bolddanger("[src] transforms!")) //Begin Hostile breach
 	if(HAS_TRAIT_FROM(src, TRAIT_MOVE_FLYING, ROUNDSTART_TRAIT))
 		REMOVE_TRAIT(src, TRAIT_MOVE_FLYING, ROUNDSTART_TRAIT)
@@ -717,7 +665,7 @@
 		if(!nihil_present)
 			addtimer(CALLBACK(src, TYPE_PROC_REF(/atom/movable, say), "In the name of Love and Justice~ Here comes Magical Girl!"))
 		return ..()
-	HostileTransform()
+	HostileTransform(TRUE)
 	return ..()
 
 //Nihil Event Code - Fights like the friendly version
@@ -812,11 +760,3 @@
 	icon = 'ModularTegustation/Teguicons/32x32.dmi'
 	icon_state = "qoh_wand"
 
-//LCL stuff
-/mob/living/simple_animal/hostile/abnormality/hatred_queen/Login()
-	. = ..()
-	if(SSmaptype.maptype == "limbus_labs")
-		if(friendly == FALSE)
-			faction = list("hatredqueen")
-		else
-			faction = list("neutral")

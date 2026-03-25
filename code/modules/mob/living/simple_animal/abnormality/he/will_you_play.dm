@@ -13,14 +13,15 @@
 		"Paper" = 60,
 		"Scissors" = 60,
 	)
-	work_damage_amount = 5
+	work_damage_upper = 6
+	work_damage_lower = 3
 	work_damage_type = WHITE_DAMAGE
 	chem_type = /datum/reagent/abnormality/sin/wrath
 	max_boxes = 15
 
 	ego_list = list(
-		/datum/ego_datum/weapon/voodoo,
-		/datum/ego_datum/armor/voodoo,
+		/datum/ego_datum/weapon/scissors,
+		/datum/ego_datum/armor/scissors,
 	)
 	gift_type = /datum/ego_gifts/voodoo
 	abnormality_origin = ABNORMALITY_ORIGIN_LIMBUS

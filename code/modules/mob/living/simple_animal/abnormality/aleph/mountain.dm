@@ -32,7 +32,8 @@
 		ABNORMALITY_WORK_ATTACHMENT = 0,
 		ABNORMALITY_WORK_REPRESSION = list(0, 0, 0, 50, 55),
 	)
-	work_damage_amount = 9
+	work_damage_upper = 8
+	work_damage_lower = 6
 	work_damage_type = BLACK_DAMAGE
 	chem_type = /datum/reagent/abnormality/sin/gluttony
 
@@ -224,7 +225,7 @@
 	// Increase stage
 	if(increase)
 		if(belly >= 2)
-			if(phase < 3 && SSmaptype.maptype != "limbus_labs")
+			if(phase < 3)
 				playsound(get_turf(src), 'sound/abnormalities/mountain/level_up.ogg', 75, 1)
 				adjustHealth(-5000)
 				maxHealth *= 2

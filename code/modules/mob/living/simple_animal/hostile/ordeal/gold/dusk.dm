@@ -89,7 +89,7 @@
 
 /mob/living/simple_animal/hostile/ordeal/centipede_corrosion/proc/AdjustCharge(addition)
 	if(addition > 0 && charge_level < charge_level_cap)
-		new /obj/effect/temp_visual/healing/charge(get_turf(src))
+		HealingEffect("charge")
 	charge_level = clamp(charge_level + addition, 0, charge_level_cap)
 	update_icon()
 
@@ -220,7 +220,7 @@
 
 /mob/living/simple_animal/hostile/ordeal/thunderbird_corrosion/proc/AdjustCharge(addition)
 	if(addition > 0 && charge_level < charge_level_cap)
-		new /obj/effect/temp_visual/healing/charge(get_turf(src))
+		HealingEffect("charge")
 	charge_level = clamp(charge_level + addition, 0, charge_level_cap)
 
 /mob/living/simple_animal/hostile/ordeal/thunderbird_corrosion/proc/Recharge(atom/A) // Recharging the centipede
@@ -248,8 +248,9 @@
 	if(!istype(H))
 		return
 	playsound(src, 'sound/abnormalities/thunderbird/tbird_zombify.ogg', 45, FALSE, 5)
-	var/mob/living/simple_animal/hostile/thunder_zombie/C = new(get_turf(src))
+	var/mob/living/simple_animal/hostile/aminion/thunder_zombie/C = new(get_turf(src))
 	if(!QDELETED(H))
+		C.can_affect_emergency = FALSE
 		C.name = "[H.real_name]"//applies the target's name and adds the name to its description
 		C.desc = "What appears to be [H.real_name], only charred and screaming incoherently..."
 		C.gender = H.gender

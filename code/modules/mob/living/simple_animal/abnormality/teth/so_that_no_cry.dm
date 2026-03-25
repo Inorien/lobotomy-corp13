@@ -7,6 +7,7 @@
 	icon_state = "so_that_no_cry"
 	icon_living = "so_that_no_cry"
 	portrait = "so_that_no_cry"
+	core_icon = "cry_egg"
 	maxHealth = 300 //High health, can be stunned.
 	health = 300
 	rapid_melee = 2
@@ -28,7 +29,8 @@
 		ABNORMALITY_WORK_ATTACHMENT = 0,
 		ABNORMALITY_WORK_REPRESSION = 60,
 	)
-	work_damage_amount = 3
+	work_damage_upper = 4
+	work_damage_lower = 2
 	work_damage_type = BLACK_DAMAGE
 	chem_type = /datum/reagent/abnormality/sin/lust
 	base_pixel_x = -12

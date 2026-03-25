@@ -37,9 +37,12 @@
 		ABNORMALITY_WORK_REPRESSION = list(0, 0, 0, 50, 55),
 	)
 	start_qliphoth = 3
-	work_damage_amount = 9
+	work_damage_upper = 8
+	work_damage_lower = 7
 	work_damage_type = list(RED_DAMAGE, WHITE_DAMAGE, BLACK_DAMAGE, PALE_DAMAGE)
 	chem_type = /datum/reagent/abnormality/sin/lust
+	max_boxes = 35
+	set_score = 75
 
 	ego_list = list(
 		/datum/ego_datum/armor/distortion,
@@ -127,6 +130,7 @@
 	var/special_attack_cooldown
 	var/list/been_hit = list()
 	var/list/time_stopped = list()
+	var/obj/particle_emitter/distorted_screech/particle_screech
 
 /mob/living/simple_animal/hostile/abnormality/distortedform/Initialize()
 	. = ..()
@@ -336,6 +340,7 @@
 /mob/living/simple_animal/hostile/abnormality/distortedform/death(gibbed)
 	if(changed)
 		ChangeForm()
+	SSticker.superbosses |= initial(name)
 	can_act = FALSE
 	icon_state = icon_dead
 	icon = 'ModularTegustation/Teguicons/abno_cores/aleph.dmi'
@@ -362,6 +367,8 @@
 	..()
 
 /mob/living/simple_animal/hostile/abnormality/distortedform/Destroy()
+	if(particle_screech)
+		particle_screech.fadeout()
 	for(var/mob/living/L in time_stopped)
 		UnFreezeMob(L)
 	return ..()
@@ -438,6 +445,8 @@
 	return
 
 /mob/living/simple_animal/hostile/abnormality/distortedform/proc/ChangeForm(form)
+	if(particle_screech)
+		particle_screech.fadeout()
 	new /obj/effect/temp_visual/distortedform_shift(get_turf(src))
 	TurnNormal() //reset offsets/icon/resistances
 	clear_filters()
@@ -541,11 +550,13 @@
 	transform_cooldown = transform_cooldown_time + world.time
 
 /mob/living/simple_animal/hostile/abnormality/distortedform/proc/DFScreech()
+	set waitfor = 0
 	if(!can_act)
 		return
 	playsound(src, "sound/abnormalities/distortedform/screech4.ogg", 75, FALSE, 8)
+	particle_screech = new(get_turf(src))
+	particle_screech.pixel_y = 26
 	for(var/i = 1 to 8)
-		new /obj/effect/temp_visual/fragment_song(get_turf(src))
 		for(var/mob/living/L in ohearers(8, src))
 			if(L.z != z || (L.status_flags & GODMODE))
 				continue
@@ -554,6 +565,10 @@
 			if(L.stat == DEAD)
 				continue
 			L.deal_damage(5, WHITE_DAMAGE)
+		SLEEP_CHECK_DEATH(3)
+	if(!particle_screech)
+		return
+	particle_screech.fadeout()
 
 /mob/living/simple_animal/hostile/abnormality/distortedform/proc/DFAttack()
 	if(!can_act)
@@ -766,13 +781,13 @@
 			if(L.health < 0)
 				if(ishuman(L))
 					var/mob/living/carbon/human/H = L
-					H.dust()
+					H.dust(TRUE, TRUE)
 				else
 					L.gib()
 	else
 		target.deal_damage(250, PALE_DAMAGE) //You - you are probably going to die!
 		if(target.health < 0)
-			target.dust()
+			target.dust(TRUE, TRUE)
 	can_act = TRUE
 	transform_cooldown = world.time
 
@@ -1037,7 +1052,7 @@
 	for(var/mob/living/carbon/human/H in view(1, src))
 		H.deal_damage(boom_damage, PALE_DAMAGE)
 		if(H.health < 0)
-			H.dust()
+			H.dust(TRUE, TRUE)
 	new /obj/effect/temp_visual/beam_in(get_turf(src))
 	times_hit ++
 	if(times_hit >= 3)
@@ -1496,7 +1511,7 @@
 				to_chat(L, span_userdanger("MY EYES!!!"))
 				H.apply_damage(30, WHITE_DAMAGE, null, H.run_armor_check(null, WHITE_DAMAGE), spread_damage = TRUE)
 				if(H.sanity_lost) // They can't deal with being bald
-					H.dust()
+					H.dust(TRUE, TRUE)
 	if(!attack_chain)
 		BaldBlast(TRUE)
 		return
@@ -1592,7 +1607,7 @@
 			continue
 		var/mob/living/carbon/human/H = L
 		if(H.sanity_lost) // TODO: TEMPORARY AS HELL
-			H.death()
+			H.death(TRUE)
 			animate(H, transform = H.transform*0.01, time = 5)
 			QDEL_IN(H, 5)
 	SLEEP_CHECK_DEATH(3)

@@ -12,7 +12,7 @@
 	var/list/attribute_requirements = list()
 	var/special
 	var/is_ranged //Is this a ranged weapon? Mostly deals with examines.
-
+	var/is_city_gear = FALSE//If a weapon is from gatcha
 	/// How much knockback does this weapon deal, if at all?
 	var/knockback = FALSE
 
@@ -21,6 +21,9 @@
 
 	//How long do you stun on hit?
 	var/stuntime = 0
+
+	//If a weapon has a special attack speed changes or uses a combo system, how fast does it attack regulary?
+	var/modified_attack_speed = null
 
 /obj/item/ego_weapon/Initialize()
 	. = ..()
@@ -35,20 +38,16 @@
 
 	if(charge && attack_charge_gain)
 		HandleCharge(1, target)
-
-	if(reach >= 2) // Reach weapon stuff
-		if(user.Adjacent(target)) // No stuntime when using a spear/whip/lance up close
-			stuntime = 0
-		else if(user.a_intent != INTENT_HARM) // Spear/whip/lance thrust visuals
+		if(user.a_intent != INTENT_HARM) // Spear/whip/lance thrust visuals
 			get_thrust_turfs(target, user)
 	if(stuntime)
-		user.Immobilize(stuntime)
-		//Visual stuff to give you better feedback
-		new /obj/effect/temp_visual/weapon_stun(get_turf(user))
-		new /obj/effect/temp_visual/dir_setting/bloodsplatter(get_turf(target), pick(GLOB.alldirs))
-		new /obj/effect/temp_visual/dir_setting/bloodsplatter(get_turf(target), pick(GLOB.alldirs))
-		new /obj/effect/temp_visual/dir_setting/bloodsplatter(get_turf(target), pick(GLOB.alldirs))
-	stuntime = initial(stuntime)
+		if((reach >= 2 && !user.Adjacent(target)) ||  reach < 2) // Reach weapon stuff
+			user.Immobilize(stuntime)
+			//Visual stuff to give you better feedback
+			user.HealingEffect("stun")
+			new /obj/effect/temp_visual/dir_setting/bloodsplatter(get_turf(target), pick(GLOB.alldirs))
+			new /obj/effect/temp_visual/dir_setting/bloodsplatter(get_turf(target), pick(GLOB.alldirs))
+			new /obj/effect/temp_visual/dir_setting/bloodsplatter(get_turf(target), pick(GLOB.alldirs))
 
 	if(target.anchored || !knockback || QDELETED(target)) // lets not throw machines around
 		return TRUE
@@ -105,7 +104,6 @@
 		else				//and red if you cannot use it
 			. += span_danger("You cannot use this EGO!")
 			. += span_danger("It has <a href='byond://?src=[REF(src)];list_attributes=1'>certain requirements</a> for the wearer.")
-
 	var/list/typecache_small = typecacheof(GLOB.small_ego)
 	if(is_type_in_typecache(src, typecache_small))
 		. += span_nicegreen("This weapon fits in an EGO belt.")
@@ -119,7 +117,10 @@
 	if(throwforce>force)
 		. += span_notice("This weapon deals [throwforce] [damtype] damage when thrown.")
 
-	switch(attack_speed)
+	var/text_attack_speed = attack_speed
+	if(modified_attack_speed)
+		text_attack_speed = modified_attack_speed
+	switch(text_attack_speed)
 		if(-INFINITY to 0.39)
 			. += span_notice("This weapon has a very fast attack speed.")
 

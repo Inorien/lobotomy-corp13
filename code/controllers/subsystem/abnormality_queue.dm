@@ -24,7 +24,7 @@ SUBSYSTEM_DEF(abnormality_queue)
 	/// The subsystem will pick abnormalities of these threat levels.
 	var/list/available_levels = list(ZAYIN_LEVEL)
 	/// An associative list of potential abnormalities.
-	var/list/possible_abnormalities = list(ZAYIN_LEVEL = list(), TETH_LEVEL = list(), HE_LEVEL = list(), WAW_LEVEL = list(), ALEPH_LEVEL = list())
+	var/list/possible_abnormalities = alist(ZAYIN_LEVEL = list(), TETH_LEVEL = list(), HE_LEVEL = list(), WAW_LEVEL = list(), ALEPH_LEVEL = list())
 	/// Amount of abnormality room spawners at the round-start.
 	var/rooms_start = 0
 	/// Amount of times PostSpawn() proc has been called. Kept separate from times_fired because admins love to call fire() manually
@@ -40,10 +40,7 @@ SUBSYSTEM_DEF(abnormality_queue)
 	var/fucked_it_lets_rolled = FALSE
 	/// Due to Managers not passing the Litmus Test, divine approval is now necessary for red roll
 	var/hardcore_roll_enabled = FALSE
-
-	/// Contains all suppression agents, clears itself of agents that are without a body.
-	var/list/active_suppression_agents = list()
-	/// the % values of when we give the agents in active_suppression_agents +10 attributes
+	/// the % values of when we give the officers +10 attributes
 	var/list/abnormality_milestones = list(0.15, 0.29, 0.44, 0.59, 0.69, 0.79, 1000000)
 	/// How far we currently are along the chain of milestones
 	var/current_milestone = 1
@@ -133,13 +130,14 @@ SUBSYSTEM_DEF(abnormality_queue)
 		return
 
 	current_milestone += 1
-	for(var/mob/living/carbon/human/person as anything in active_suppression_agents)
-		if(!istype(person) || QDELETED(person)) // gibbed or cryo'd, we no longer care about them
-			active_suppression_agents -= person
-			continue
+	if(current_milestone > 2)
+		for(var/mob/living/carbon/human/person as anything in SSlobotomy_corp.active_officers)
+			if(!istype(person) || QDELETED(person)) // gibbed or cryo'd, we no longer care about them
+				SSlobotomy_corp.active_officers -= person
+				continue
 
-		person.adjust_all_attribute_levels(10)
-		to_chat(person, span_notice("You feel stronger than before."))
+			person.adjust_all_attribute_levels(10)
+			to_chat(person, span_notice("You feel stronger than before."))
 
 /datum/controller/subsystem/abnormality_queue/proc/PickAbno()
 	if(!length(available_levels))
@@ -178,9 +176,9 @@ SUBSYSTEM_DEF(abnormality_queue)
 	return TRUE
 
 /datum/controller/subsystem/abnormality_queue/proc/HandleStartingAbnormalities()
-	var/player_count = length(GLOB.clients)
+	var/player_count = AvailableAgentCount()
 	var/i
-	for(i=1 to round(clamp(player_count, 5, 30) / 5))
+	for(i=1 to 1 + (floor(min(player_count, 15) / 3)))
 		sleep(15 SECONDS) // Allows manager to select abnormalities if he is fast enough.
 		SpawnAbno()
 	message_admins("[i] round-start abnormalities have been spawned.")

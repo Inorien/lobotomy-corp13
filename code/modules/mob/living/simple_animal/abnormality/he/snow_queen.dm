@@ -41,9 +41,11 @@
 		ABNORMALITY_WORK_REPRESSION = 0,
 		"Rescue" = 100,
 		)
-	work_damage_amount = 5
+	work_damage_upper = 5
+	work_damage_lower = 4
 	work_damage_type = WHITE_DAMAGE
 	chem_type = /datum/reagent/abnormality/sin/gloom
+	max_boxes = 18
 	wander = FALSE
 
 	observation_prompt = "You remember her. <br>\
@@ -215,7 +217,7 @@
 	if(ishuman(attacked_target))
 		var/mob/living/carbon/human/H = attacked_target
 		if(H.stat == DEAD && (H == storybook_hero || H == frozen_employee))
-			H.dust(TRUE, FALSE)
+			H.dust(TRUE, TRUE)
 			return FALSE
 	//If arena attacks is true then dont have a chance connected to it.
 	if(slash_cooldown < world.time && (prob(50) || arena_attacks))
@@ -404,7 +406,7 @@
 	arena_cleave.Cut()
 	if(!arena_landmarks.len)
 		return FALSE
-	arena_cleave = list(
+	arena_cleave = alist(
 		ICE_ARENA_CENTER = list(),
 		ICE_ARENA_NORTH = list(),
 		ICE_ARENA_EAST = list(),
